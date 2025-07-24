@@ -9,16 +9,11 @@ import { Sidebar } from './components/Sidebar';
 import { TripMap } from './components/TripMap';
 import type { Stop, Location } from './types';
 import { useAutocomplete } from './hooks/useAutocomplete';
+import { mapboxService } from './services/mapbox';
 
-const MAPBOX_TOKEN =
-  'pk.eyJ1Ijoia2V2aW5jcmNsIiwiYSI6ImNtZGh1cjVpdjA1eHcybHNmMXZ0anlhYWsifQ.sIVlX-RHn6sTzqPf-w1VPg'; // TODO: Replace with your token
+const DEFAULT_LOCATION = { latitude: 40.7128, longitude: -74.0060 }; // New York City
 
 const drawerWidth = 320;
-
-const DEFAULT_LOCATION = {
-  longitude: -98.5795, // Center of USA
-  latitude: 39.8283,
-};
 
 const App: React.FC = () => {
   const [startLocation, setStartLocation] = useState(DEFAULT_LOCATION);
@@ -63,43 +58,9 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Reverse geocode when startLocation changes
-  useEffect(() => {
-    async function fetchAddress() {
-      console.log(`📍 Reverse geocoding start location: ${startLocation.longitude}, ${startLocation.latitude}`);
-      try {
-        const res = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${startLocation.longitude},${startLocation.latitude}.json?access_token=${MAPBOX_TOKEN}`
-        );
-        const data = await res.json();
-        if (data.features && data.features.length > 0) {
-          console.log(`🏠 Start location address: ${data.features[0].place_name}`);
-          setStartLocationName(data.features[0].place_name);
-          startAutocomplete.setValue(data.features[0].place_name);
-        } else {
-          console.log(`❌ No address found for start location`);
-          setStartLocationName('Unknown location');
-          startAutocomplete.setValue('');
-        }
-      } catch (error) {
-        console.log(`❌ Error reverse geocoding start location:`, error);
-        setStartLocationName('Unknown location');
-        startAutocomplete.setValue('');
-      }
-    }
-    fetchAddress();
-  }, [startLocation]);
-
-  // Fetch suggestions from Mapbox
+  // Fetch suggestions from Mapbox using SDK
   const fetchMapboxSuggestions = useCallback(async (query: string) => {
-    console.log(`🔍 Fetching suggestions for: "${query}"`);
-    const res = await fetch(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&autocomplete=true&limit=5`
-    );
-    const data = await res.json();
-    const features = data.features || [];
-    console.log(`📡 Mapbox response for "${query}": ${features.length} features`);
-    return features;
+    return await mapboxService.searchPlaces(query, { autocomplete: true, limit: 5 });
   }, []);
 
   // Start location autocomplete
@@ -120,10 +81,6 @@ const App: React.FC = () => {
       longitude: feature.center[0],
       zoom: 12,
     });
-    setStartLocationName(feature.place_name);
-    setSearchInput(feature.place_name);
-    setSuggestions([]);
-    setShowSuggestions(false);
   };
 
   // Handle input focus/blur
@@ -141,32 +98,35 @@ const App: React.FC = () => {
         },
         () => {
           // If user denies or error, do nothing
-        },
+        }
       );
     }
   };
 
-  // Reverse geocode when endLocation changes
+  // Reverse geocode when startLocation changes using SDK
+  useEffect(() => {
+    async function fetchAddress() {
+      const result = await mapboxService.reverseGeocode(startLocation.longitude, startLocation.latitude);
+      if (result) {
+        setStartLocationName(result.place_name);
+        startAutocomplete.setValue(result.place_name);
+      } else {
+        setStartLocationName('Unknown location');
+        startAutocomplete.setValue('');
+      }
+    }
+    fetchAddress();
+  }, [startLocation]);
+
+  // Reverse geocode when endLocation changes using SDK
   useEffect(() => {
     if (!endLocation) return;
     async function fetchAddress() {
-      console.log(`📍 Reverse geocoding end location: ${endLocation.longitude}, ${endLocation.latitude}`);
-      try {
-        const res = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${endLocation.longitude},${endLocation.latitude}.json?access_token=${MAPBOX_TOKEN}`
-        );
-        const data = await res.json();
-        if (data.features && data.features.length > 0) {
-          console.log(`🏠 End location address: ${data.features[0].place_name}`);
-          setEndLocationName(data.features[0].place_name);
-          setEndSearchInput(data.features[0].place_name);
-        } else {
-          console.log(`❌ No address found for end location`);
-          setEndLocationName('Unknown location');
-          setEndSearchInput('');
-        }
-      } catch (error) {
-        console.log(`❌ Error reverse geocoding end location:`, error);
+      const result = await mapboxService.reverseGeocode(endLocation!.longitude, endLocation!.latitude);
+      if (result) {
+        setEndLocationName(result.place_name);
+        setEndSearchInput(result.place_name);
+      } else {
         setEndLocationName('Unknown location');
         setEndSearchInput('');
       }
@@ -206,14 +166,9 @@ const App: React.FC = () => {
     }
     let ignore = false;
     async function fetchSuggestions() {
-      const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          stopSearchInput
-        )}.json?access_token=${MAPBOX_TOKEN}&autocomplete=true&limit=5`
-      );
-      const data = await res.json();
+      const results = await mapboxService.searchPlaces(stopSearchInput, { autocomplete: true, limit: 5 });
       if (!ignore) {
-        setStopSuggestions(data.features || []);
+        setStopSuggestions(results);
       }
     }
     fetchSuggestions();
@@ -246,31 +201,25 @@ const App: React.FC = () => {
   const handleStopInputFocus = () => setShowStopSuggestions(true);
   const handleStopInputBlur = () => setTimeout(() => setShowStopSuggestions(false), 100);
 
-  // Plan route when start, stops, and end locations are set
+  // Plan route when start, stops, and end locations are set using SDK
   useEffect(() => {
     if (!endLocation || !startLocation) {
       setRouteGeoJSON(null);
       return;
     }
-    // Build the waypoints string: start;stop1;stop2;...;end
-    const waypoints = [
-      `${startLocation.longitude},${startLocation.latitude}`,
-      ...stops.map((stop) => `${stop.longitude},${stop.latitude}`),
-      `${endLocation.longitude},${endLocation.latitude}`,
-    ].join(';');
     
-    console.log(`🗺️ Planning route with ${waypoints.split(';').length} waypoints:`, waypoints);
+    // Build waypoints array with proper typing
+    const waypoints: Array<[number, number]> = [
+      [startLocation.longitude, startLocation.latitude],
+      ...stops.map((stop): [number, number] => [stop.longitude, stop.latitude]),
+      [endLocation.longitude, endLocation.latitude],
+    ];
     
     async function fetchRoute() {
-      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${waypoints}?geometries=geojson&access_token=${MAPBOX_TOKEN}`;
-      console.log(`🚗 Fetching route from Mapbox Directions API`);
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.routes && data.routes.length > 0) {
-        console.log(`✅ Route received: ${data.routes[0].distance?.toFixed(0)}m, ${data.routes[0].duration?.toFixed(0)}s`);
-        setRouteGeoJSON(data.routes[0].geometry);
+      const route = await mapboxService.getDirections(waypoints, 'driving');
+      if (route) {
+        setRouteGeoJSON(route.geometry);
       } else {
-        console.log(`❌ No route found for waypoints`);
         setRouteGeoJSON(null);
       }
     }
@@ -295,6 +244,53 @@ const App: React.FC = () => {
       [maxLng, maxLat],
     ], { padding: 60, duration: 1000 });
   }, [routeGeoJSON]);
+
+  // Fetch POIs along the route using SDK
+  useEffect(() => {
+    if (!routeGeoJSON || !mapRef.current) return;
+    
+    async function fetchPOIs() {
+      // Get route bounds for POI search
+      const coords = routeGeoJSON.coordinates;
+      if (!coords || coords.length === 0) return;
+      
+      // Calculate route bounds
+      let minLng = coords[0][0], minLat = coords[0][1], maxLng = coords[0][0], maxLat = coords[0][1];
+      coords.forEach(([lng, lat]: [number, number]) => {
+        if (lng < minLng) minLng = lng;
+        if (lng > maxLng) maxLng = lng;
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+      });
+      
+      // Search for POIs in route bounds
+      const poiCategories = ['food', 'fuel', 'tourism'];
+      const allPois: any[] = [];
+      
+      for (const category of poiCategories) {
+        const categoryPois = await mapboxService.searchPOIs(category, [minLng, minLat, maxLng, maxLat], 10);
+        allPois.push(...categoryPois);
+      }
+      
+      // Note: We need to add pois state if we want to display POIs on the map
+      console.log(`Found ${allPois.length} POIs along route`);
+    }
+    
+    fetchPOIs();
+  }, [routeGeoJSON]);
+
+  // Add POI as stop
+  const handlePOIClick = (poi: any) => {
+    console.log(`➕ Adding POI as stop: ${poi.displayName}`);
+    setStops((prev) => [
+      ...prev,
+      {
+        latitude: poi.center[1],
+        longitude: poi.center[0],
+        name: poi.displayName,
+      },
+    ]);
+  };
 
   // Handle drag end for stops
   const handleDragEnd = (result: DropResult) => {
@@ -361,7 +357,7 @@ const App: React.FC = () => {
           endLocation={endLocation}
           stops={stops}
           routeGeoJSON={routeGeoJSON}
-          mapboxToken={MAPBOX_TOKEN}
+          mapboxToken={mapboxService.getToken()}
         />
       </Box>
     </Box>
