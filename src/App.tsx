@@ -42,6 +42,8 @@ const App: React.FC = () => {
   const [showStopSuggestions, setShowStopSuggestions] = useState(false);
   const stopInputRef = useRef<HTMLInputElement>(null);
 
+  const mapRef = useRef<any>(null);
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -205,6 +207,14 @@ const App: React.FC = () => {
   const handleEndInputFocus = () => setShowEndSuggestions(true);
   const handleEndInputBlur = () => setTimeout(() => setShowEndSuggestions(false), 100);
 
+  // Clear end location
+  const handleClearEndLocation = () => {
+    setEndLocation(null);
+    setEndSearchInput("");
+    setEndLocationName("");
+    setRouteGeoJSON(null);
+  };
+
   // Fetch stop suggestions as user types
   useEffect(() => {
     if (stopSearchInput.length < 3) {
@@ -277,6 +287,25 @@ const App: React.FC = () => {
     }
     fetchRoute();
   }, [startLocation, endLocation, stops]);
+
+  // After routeGeoJSON updates, fit map to route bounds
+  useEffect(() => {
+    if (!routeGeoJSON || !mapRef.current) return;
+    // Calculate bounds from route coordinates
+    const coords = routeGeoJSON.coordinates;
+    if (!coords || coords.length === 0) return;
+    let minLng = coords[0][0], minLat = coords[0][1], maxLng = coords[0][0], maxLat = coords[0][1];
+    coords.forEach(([lng, lat]: [number, number]) => {
+      if (lng < minLng) minLng = lng;
+      if (lng > maxLng) maxLng = lng;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+    });
+    mapRef.current.fitBounds([
+      [minLng, minLat],
+      [maxLng, maxLat],
+    ], { padding: 60, duration: 1000 });
+  }, [routeGeoJSON]);
 
   // Handle drag end for stops
   const handleDragEnd = (result: DropResult) => {
@@ -375,6 +404,16 @@ const App: React.FC = () => {
                   onBlur={handleEndInputBlur}
                   autoComplete="off"
                 />
+                {endLocation && (
+                  <button
+                    type="button"
+                    style={{ padding: '8px 12px', borderRadius: 4, border: '1px solid #d32f2f', background: '#fff', color: '#d32f2f', fontWeight: 600, cursor: 'pointer' }}
+                    onClick={handleClearEndLocation}
+                    title="Clear end location"
+                  >
+                    ×
+                  </button>
+                )}
               </Box>
               {showEndSuggestions && endSuggestions.length > 0 && (
                 <Box
@@ -503,6 +542,7 @@ const App: React.FC = () => {
       {/* Map View */}
       <Box sx={{ flexGrow: 1, minWidth: 0 }}>
         <Map
+          ref={mapRef}
           longitude={mapView.longitude}
           latitude={mapView.latitude}
           zoom={mapView.zoom}
