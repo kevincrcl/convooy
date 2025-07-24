@@ -22,14 +22,19 @@ export function useAutocomplete({
 
     // Clear previous timeout
     if (timeoutRef.current) {
+      console.log(`🔄 Debouncing: clearing previous timeout for "${value}"`);
       clearTimeout(timeoutRef.current);
     }
 
     // Set new timeout for debounced API call
     timeoutRef.current = window.setTimeout(async () => {
+      console.log(`🌍 Making Mapbox API call for: "${value}"`);
       let ignore = false;
       const results = await fetchSuggestions(value);
-      if (!ignore) setSuggestions(results);
+      if (!ignore) {
+        console.log(`✅ Received ${results.length} suggestions for: "${value}"`);
+        setSuggestions(results);
+      }
     }, debounceMs);
 
     return () => {

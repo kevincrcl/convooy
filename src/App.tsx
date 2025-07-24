@@ -66,19 +66,23 @@ const App: React.FC = () => {
   // Reverse geocode when startLocation changes
   useEffect(() => {
     async function fetchAddress() {
+      console.log(`📍 Reverse geocoding start location: ${startLocation.longitude}, ${startLocation.latitude}`);
       try {
         const res = await fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${startLocation.longitude},${startLocation.latitude}.json?access_token=${MAPBOX_TOKEN}`
         );
         const data = await res.json();
         if (data.features && data.features.length > 0) {
+          console.log(`🏠 Start location address: ${data.features[0].place_name}`);
           setStartLocationName(data.features[0].place_name);
-          startAutocomplete.setValue(data.features[0].place_name); // <-- keep input in sync
+          startAutocomplete.setValue(data.features[0].place_name);
         } else {
+          console.log(`❌ No address found for start location`);
           setStartLocationName('Unknown location');
           startAutocomplete.setValue('');
         }
-      } catch {
+      } catch (error) {
+        console.log(`❌ Error reverse geocoding start location:`, error);
         setStartLocationName('Unknown location');
         startAutocomplete.setValue('');
       }
@@ -88,11 +92,14 @@ const App: React.FC = () => {
 
   // Fetch suggestions from Mapbox
   const fetchMapboxSuggestions = useCallback(async (query: string) => {
+    console.log(`🔍 Fetching suggestions for: "${query}"`);
     const res = await fetch(
       `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&autocomplete=true&limit=5`
     );
     const data = await res.json();
-    return data.features || [];
+    const features = data.features || [];
+    console.log(`📡 Mapbox response for "${query}": ${features.length} features`);
+    return features;
   }, []);
 
   // Start location autocomplete
@@ -143,19 +150,23 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!endLocation) return;
     async function fetchAddress() {
+      console.log(`📍 Reverse geocoding end location: ${endLocation.longitude}, ${endLocation.latitude}`);
       try {
         const res = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${endLocation.longitude},${endLocation.latitude}.json?access_token=${MAPBOX_TOKEN}`,
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${endLocation.longitude},${endLocation.latitude}.json?access_token=${MAPBOX_TOKEN}`
         );
         const data = await res.json();
         if (data.features && data.features.length > 0) {
+          console.log(`🏠 End location address: ${data.features[0].place_name}`);
           setEndLocationName(data.features[0].place_name);
           setEndSearchInput(data.features[0].place_name);
         } else {
+          console.log(`❌ No address found for end location`);
           setEndLocationName('Unknown location');
           setEndSearchInput('');
         }
-      } catch {
+      } catch (error) {
+        console.log(`❌ Error reverse geocoding end location:`, error);
         setEndLocationName('Unknown location');
         setEndSearchInput('');
       }
@@ -247,13 +258,19 @@ const App: React.FC = () => {
       ...stops.map((stop) => `${stop.longitude},${stop.latitude}`),
       `${endLocation.longitude},${endLocation.latitude}`,
     ].join(';');
+    
+    console.log(`🗺️ Planning route with ${waypoints.split(';').length} waypoints:`, waypoints);
+    
     async function fetchRoute() {
       const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${waypoints}?geometries=geojson&access_token=${MAPBOX_TOKEN}`;
+      console.log(`🚗 Fetching route from Mapbox Directions API`);
       const res = await fetch(url);
       const data = await res.json();
       if (data.routes && data.routes.length > 0) {
+        console.log(`✅ Route received: ${data.routes[0].distance?.toFixed(0)}m, ${data.routes[0].duration?.toFixed(0)}s`);
         setRouteGeoJSON(data.routes[0].geometry);
       } else {
+        console.log(`❌ No route found for waypoints`);
         setRouteGeoJSON(null);
       }
     }
