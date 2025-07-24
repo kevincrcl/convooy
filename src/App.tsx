@@ -105,6 +105,22 @@ const App: React.FC = () => {
     const handleInputFocus = () => setShowSuggestions(true);
     const handleInputBlur = () => setTimeout(() => setShowSuggestions(false), 100);
 
+    // Add this function to get current location and update state
+    const resetToCurrentLocation = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setStartLocation({ latitude, longitude });
+            setMapView({ latitude, longitude, zoom: 12 });
+          },
+          () => {
+            // If user denies or error, do nothing
+          }
+        );
+      }
+    };
+
     return (
         <Box sx={{ display: "flex", height: "100vh", width: "100vw" }}>
             {/* Sidebar */}
@@ -129,16 +145,26 @@ const App: React.FC = () => {
                             Trip Controls
                         </Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, position: 'relative' }}>
-                            <input
-                                ref={inputRef}
-                                placeholder="Start location"
-                                style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
-                                value={searchInput}
-                                onChange={e => setSearchInput(e.target.value)}
-                                onFocus={handleInputFocus}
-                                onBlur={handleInputBlur}
-                                autoComplete="off"
-                            />
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                <input
+                                    ref={inputRef}
+                                    placeholder="Start location"
+                                    style={{ flex: 1, padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
+                                    value={searchInput}
+                                    onChange={e => setSearchInput(e.target.value)}
+                                    onFocus={handleInputFocus}
+                                    onBlur={handleInputBlur}
+                                    autoComplete="off"
+                                />
+                                <button
+                                    type="button"
+                                    style={{ padding: '8px 12px', borderRadius: 4, border: '1px solid #1976d2', background: '#fff', color: '#1976d2', fontWeight: 600, cursor: 'pointer' }}
+                                    onClick={resetToCurrentLocation}
+                                    title="Reset to current location"
+                                >
+                                    ⟳
+                                </button>
+                            </Box>
                             {showSuggestions && suggestions.length > 0 && (
                                 <Box sx={{ position: 'absolute', top: 40, left: 0, right: 0, zIndex: 10, bgcolor: '#fff', border: '1px solid #ccc', borderRadius: 1, boxShadow: 2 }}>
                                     {suggestions.map((feature) => (
