@@ -15,6 +15,7 @@ const DEFAULT_LOCATION = {
 
 const App: React.FC = () => {
     const [startLocation, setStartLocation] = useState(DEFAULT_LOCATION);
+    const [startLocationName, setStartLocationName] = useState('');
     const [mapView, setMapView] = useState({ ...DEFAULT_LOCATION, zoom: 4 });
 
     useEffect(() => {
@@ -22,7 +23,6 @@ const App: React.FC = () => {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const { latitude, longitude } = position.coords;
-                    console.log("FART", { longitude, latitude })
                     setStartLocation({ latitude, longitude });
                     setMapView({ latitude, longitude, zoom: 12 });
                 },
@@ -32,6 +32,26 @@ const App: React.FC = () => {
             );
         }
     }, []);
+
+    // Reverse geocode when startLocation changes
+    useEffect(() => {
+        async function fetchAddress() {
+            try {
+                const res = await fetch(
+                    `https://api.mapbox.com/geocoding/v5/mapbox.places/${startLocation.longitude},${startLocation.latitude}.json?access_token=${MAPBOX_TOKEN}`
+                );
+                const data = await res.json();
+                if (data.features && data.features.length > 0) {
+                    setStartLocationName(data.features[0].place_name);
+                } else {
+                    setStartLocationName('Unknown location');
+                }
+            } catch {
+                setStartLocationName('Unknown location');
+            }
+        }
+        fetchAddress();
+    }, [startLocation]);
 
     return (
         <Box sx={{ display: "flex", height: "100vh", width: "100vw" }}>
@@ -60,7 +80,7 @@ const App: React.FC = () => {
                             <input
                                 placeholder="Start location"
                                 style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
-                                value={`${startLocation.latitude.toFixed(5)}, ${startLocation.longitude.toFixed(5)}`}
+                                value={startLocationName || 'Loading...'}
                                 readOnly
                             />
                             <input placeholder="End location" style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
