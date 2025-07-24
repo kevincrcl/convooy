@@ -4,6 +4,8 @@ import Typography from '@mui/material/Typography';
 import Drawer from '@mui/material/Drawer';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { Stop, Location } from '../types';
+import { LocationSearchInput } from './LocationSearchInput';
+import { DraggableStopList } from './DraggableStopList';
 
 interface SidebarProps {
   drawerWidth: number;
@@ -92,51 +94,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
             Trip Controls
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, position: 'relative' }}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <input
-                ref={inputRef}
-                placeholder="Start location"
-                style={{ flex: 1, padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
-                value={startSearchInput}
-                onChange={e => setStartSearchInput(e.target.value)}
-                onFocus={handleStartInputFocus}
-                onBlur={handleStartInputBlur}
-                autoComplete="off"
-              />
-              <button
-                type="button"
-                style={{ padding: '8px 12px', borderRadius: 4, border: '1px solid #1976d2', background: '#fff', color: '#1976d2', fontWeight: 600, cursor: 'pointer' }}
-                onClick={resetToCurrentLocation}
-                title="Reset to current location"
-              >
-                ⟳
-              </button>
-            </Box>
-            {showStartSuggestions && startSuggestions.length > 0 && (
-              <Box sx={{ position: 'absolute', top: 40, left: 0, right: 0, zIndex: 10, bgcolor: '#fff', border: '1px solid #ccc', borderRadius: 1, boxShadow: 2 }}>
-                {startSuggestions.map((feature) => (
-                  <Box
-                    key={feature.id}
-                    sx={{ p: 1, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
-                    onMouseDown={() => handleStartSuggestionClick(feature)}
-                  >
-                    {feature.place_name}
-                  </Box>
-                ))}
-              </Box>
-            )}
-            <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-              <input
-                ref={endInputRef}
-                placeholder="End location"
-                style={{ flex: 1, padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
-                value={endSearchInput}
-                onChange={e => setEndSearchInput(e.target.value)}
-                onFocus={handleEndInputFocus}
-                onBlur={handleEndInputBlur}
-                autoComplete="off"
-              />
-              {endLocation && (
+            <LocationSearchInput
+              value={startSearchInput}
+              onChange={setStartSearchInput}
+              onFocus={handleStartInputFocus}
+              onBlur={handleStartInputBlur}
+              suggestions={startSuggestions}
+              showSuggestions={showStartSuggestions}
+              onSuggestionClick={handleStartSuggestionClick}
+              placeholder="Start location"
+              button={
+                <button
+                  type="button"
+                  style={{ padding: '8px 12px', borderRadius: 4, border: '1px solid #1976d2', background: '#fff', color: '#1976d2', fontWeight: 600, cursor: 'pointer' }}
+                  onClick={resetToCurrentLocation}
+                  title="Reset to current location"
+                >
+                  ⟳
+                </button>
+              }
+            />
+            <LocationSearchInput
+              value={endSearchInput}
+              onChange={setEndSearchInput}
+              onFocus={handleEndInputFocus}
+              onBlur={handleEndInputBlur}
+              suggestions={endSuggestions}
+              showSuggestions={showEndSuggestions}
+              onSuggestionClick={handleEndSuggestionClick}
+              placeholder="End location"
+              button={endLocation && (
                 <button
                   type="button"
                   style={{ padding: '8px 12px', borderRadius: 4, border: '1px solid #d32f2f', background: '#fff', color: '#d32f2f', fontWeight: 600, cursor: 'pointer' }}
@@ -146,20 +133,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   ×
                 </button>
               )}
-            </Box>
-            {showEndSuggestions && endSuggestions.length > 0 && (
-              <Box sx={{ position: 'absolute', top: 82, left: 0, right: 0, zIndex: 10, bgcolor: '#fff', border: '1px solid #ccc', borderRadius: 1, boxShadow: 2 }}>
-                {endSuggestions.map((feature) => (
-                  <Box
-                    key={feature.id}
-                    sx={{ p: 1, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
-                    onMouseDown={() => handleEndSuggestionClick(feature)}
-                  >
-                    {feature.place_name}
-                  </Box>
-                ))}
-              </Box>
-            )}
+            />
           </Box>
         </Box>
         {/* Trip Stops */}
@@ -168,77 +142,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
             Trip Stops
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, position: 'relative' }}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <input
-                ref={stopInputRef}
-                placeholder="Add stop (search)"
-                style={{ flex: 1, padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
-                value={stopSearchInput}
-                onChange={e => setStopSearchInput(e.target.value)}
-                onFocus={handleStopInputFocus}
-                onBlur={handleStopInputBlur}
-                autoComplete="off"
-              />
-            </Box>
-            {showStopSuggestions && stopSuggestions.length > 0 && (
-              <Box sx={{ position: 'absolute', top: 40, left: 0, right: 0, zIndex: 10, bgcolor: '#fff', border: '1px solid #ccc', borderRadius: 1, boxShadow: 2 }}>
-                {stopSuggestions.map((feature) => (
-                  <Box
-                    key={feature.id}
-                    sx={{ p: 1, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
-                    onMouseDown={() => handleStopSuggestionClick(feature)}
-                  >
-                    {feature.place_name}
-                  </Box>
-                ))}
-              </Box>
-            )}
-            {/* List of stops (draggable) */}
-            <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId="stops-droppable">
-                {(provided) => (
-                  <Box
-                    sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                  >
-                    {stops.length === 0 && (
-                      <Typography variant="body2" color="text.secondary">No stops added.</Typography>
-                    )}
-                    {stops.map((stop, idx) => (
-                      <Draggable key={idx.toString()} draggableId={idx.toString()} index={idx}>
-                        {(provided, snapshot) => (
-                          <Box
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              bgcolor: snapshot.isDragging ? '#ffe082' : '#f5f5f5',
-                              borderRadius: 1,
-                              p: 1,
-                              boxShadow: snapshot.isDragging ? 3 : 0,
-                            }}
-                          >
-                            <Typography variant="body2" sx={{ flex: 1, mr: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stop.name}</Typography>
-                            <button
-                              type="button"
-                              style={{ background: 'none', border: 'none', color: '#d32f2f', fontWeight: 700, cursor: 'pointer', fontSize: 18 }}
-                              onClick={() => handleRemoveStop(idx)}
-                              title="Remove stop"
-                            >
-                              ×
-                            </button>
-                          </Box>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </Box>
-                )}
-              </Droppable>
-            </DragDropContext>
+            <LocationSearchInput
+              value={stopSearchInput}
+              onChange={setStopSearchInput}
+              onFocus={handleStopInputFocus}
+              onBlur={handleStopInputBlur}
+              suggestions={stopSuggestions}
+              showSuggestions={showStopSuggestions}
+              onSuggestionClick={handleStopSuggestionClick}
+              placeholder="Add stop (search)"
+            />
+            <DraggableStopList
+              stops={stops}
+              handleRemoveStop={handleRemoveStop}
+              handleDragEnd={handleDragEnd}
+            />
           </Box>
         </Box>
       </Box>

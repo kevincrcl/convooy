@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Map, { NavigationControl, Marker, Source, Layer } from 'react-map-gl/mapbox';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
@@ -8,6 +8,7 @@ import type { DropResult } from '@hello-pangea/dnd';
 import { Sidebar } from './components/Sidebar';
 import { TripMap } from './components/TripMap';
 import type { Stop, Location } from './types';
+import { useAutocomplete } from './hooks/useAutocomplete';
 
 const MAPBOX_TOKEN =
   'pk.eyJ1Ijoia2V2aW5jcmNsIiwiYSI6ImNtZGh1cjVpdjA1eHcybHNmMXZ0anlhYWsifQ.sIVlX-RHn6sTzqPf-w1VPg'; // TODO: Replace with your token
@@ -67,47 +68,39 @@ const App: React.FC = () => {
     async function fetchAddress() {
       try {
         const res = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${startLocation.longitude},${startLocation.latitude}.json?access_token=${MAPBOX_TOKEN}`,
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${startLocation.longitude},${startLocation.latitude}.json?access_token=${MAPBOX_TOKEN}`
         );
         const data = await res.json();
         if (data.features && data.features.length > 0) {
           setStartLocationName(data.features[0].place_name);
-          setSearchInput(data.features[0].place_name);
+          startAutocomplete.setValue(data.features[0].place_name); // <-- keep input in sync
         } else {
           setStartLocationName('Unknown location');
-          setSearchInput('');
+          startAutocomplete.setValue('');
         }
       } catch {
         setStartLocationName('Unknown location');
-        setSearchInput('');
+        startAutocomplete.setValue('');
       }
     }
     fetchAddress();
   }, [startLocation]);
 
-  // Fetch suggestions as user types
-  useEffect(() => {
-    if (searchInput.length < 3) {
-      setSuggestions([]);
-      return;
-    }
-    let ignore = false;
-    async function fetchSuggestions() {
-      const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          searchInput,
-        )}.json?access_token=${MAPBOX_TOKEN}&autocomplete=true&limit=5`,
-      );
-      const data = await res.json();
-      if (!ignore) {
-        setSuggestions(data.features || []);
-      }
-    }
-    fetchSuggestions();
-    return () => {
-      ignore = true;
-    };
-  }, [searchInput]);
+  // Fetch suggestions from Mapbox
+  const fetchMapboxSuggestions = useCallback(async (query: string) => {
+    const res = await fetch(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&autocomplete=true&limit=5`
+    );
+    const data = await res.json();
+    return data.features || [];
+  }, []);
+
+  // Start location autocomplete
+  const startAutocomplete = useAutocomplete({ fetchSuggestions: fetchMapboxSuggestions });
+  // End location autocomplete
+  const endAutocomplete = useAutocomplete({ fetchSuggestions: fetchMapboxSuggestions });
+  // Stop location autocomplete
+  const stopAutocomplete = useAutocomplete({ fetchSuggestions: fetchMapboxSuggestions });
 
   // Handle suggestion selection
   const handleSuggestionClick = (feature: any) => {
@@ -170,30 +163,6 @@ const App: React.FC = () => {
     fetchAddress();
   }, [endLocation]);
 
-  // Fetch end suggestions as user types
-  useEffect(() => {
-    if (endSearchInput.length < 3) {
-      setEndSuggestions([]);
-      return;
-    }
-    let ignore = false;
-    async function fetchSuggestions() {
-      const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          endSearchInput,
-        )}.json?access_token=${MAPBOX_TOKEN}&autocomplete=true&limit=5`,
-      );
-      const data = await res.json();
-      if (!ignore) {
-        setEndSuggestions(data.features || []);
-      }
-    }
-    fetchSuggestions();
-    return () => {
-      ignore = true;
-    };
-  }, [endSearchInput]);
-
   // Handle end suggestion selection
   const handleEndSuggestionClick = (feature: any) => {
     const lat = feature.center[1];
@@ -213,8 +182,8 @@ const App: React.FC = () => {
   // Clear end location
   const handleClearEndLocation = () => {
     setEndLocation(null);
-    setEndSearchInput("");
-    setEndLocationName("");
+    endAutocomplete.setValue('');
+    setEndLocationName('');
     setRouteGeoJSON(null);
   };
 
@@ -252,7 +221,7 @@ const App: React.FC = () => {
         name: feature.place_name,
       },
     ]);
-    setStopSearchInput("");
+    stopAutocomplete.setValue('');
     setStopSuggestions([]);
     setShowStopSuggestions(false);
   };
@@ -323,31 +292,46 @@ const App: React.FC = () => {
     <Box sx={{ display: 'flex', height: '100vh', width: '100vw' }}>
       <Sidebar
         drawerWidth={drawerWidth}
-        startSearchInput={searchInput}
-        setStartSearchInput={setSearchInput}
-        startSuggestions={suggestions}
-        showStartSuggestions={showSuggestions}
-        handleStartInputFocus={handleInputFocus}
-        handleStartInputBlur={handleInputBlur}
-        handleStartSuggestionClick={handleSuggestionClick}
+        // Start location autocomplete
+        startSearchInput={startAutocomplete.value}
+        setStartSearchInput={startAutocomplete.setValue}
+        startSuggestions={startAutocomplete.suggestions}
+        showStartSuggestions={startAutocomplete.showSuggestions}
+        handleStartInputFocus={startAutocomplete.onFocus}
+        handleStartInputBlur={startAutocomplete.onBlur}
+        handleStartSuggestionClick={feature => {
+          startAutocomplete.setValue(feature.place_name);
+          startAutocomplete.onSuggestionClick(feature);
+          handleSuggestionClick(feature);
+        }}
         resetToCurrentLocation={resetToCurrentLocation}
-        endSearchInput={endSearchInput}
-        setEndSearchInput={setEndSearchInput}
-        endSuggestions={endSuggestions}
-        showEndSuggestions={showEndSuggestions}
-        handleEndInputFocus={handleEndInputFocus}
-        handleEndInputBlur={handleEndInputBlur}
-        handleEndSuggestionClick={handleEndSuggestionClick}
+        // End location autocomplete
+        endSearchInput={endAutocomplete.value}
+        setEndSearchInput={endAutocomplete.setValue}
+        endSuggestions={endAutocomplete.suggestions}
+        showEndSuggestions={endAutocomplete.showSuggestions}
+        handleEndInputFocus={endAutocomplete.onFocus}
+        handleEndInputBlur={endAutocomplete.onBlur}
+        handleEndSuggestionClick={feature => {
+          endAutocomplete.setValue(feature.place_name);
+          endAutocomplete.onSuggestionClick(feature);
+          handleEndSuggestionClick(feature);
+        }}
         endLocation={endLocation}
         handleClearEndLocation={handleClearEndLocation}
+        // Stop location autocomplete
+        stopSearchInput={stopAutocomplete.value}
+        setStopSearchInput={stopAutocomplete.setValue}
+        stopSuggestions={stopAutocomplete.suggestions}
+        showStopSuggestions={stopAutocomplete.showSuggestions}
+        handleStopInputFocus={stopAutocomplete.onFocus}
+        handleStopInputBlur={stopAutocomplete.onBlur}
+        handleStopSuggestionClick={feature => {
+          stopAutocomplete.setValue(feature.place_name);
+          stopAutocomplete.onSuggestionClick(feature);
+          handleStopSuggestionClick(feature);
+        }}
         stops={stops}
-        stopSearchInput={stopSearchInput}
-        setStopSearchInput={setStopSearchInput}
-        stopSuggestions={stopSuggestions}
-        showStopSuggestions={showStopSuggestions}
-        handleStopInputFocus={handleStopInputFocus}
-        handleStopInputBlur={handleStopInputBlur}
-        handleStopSuggestionClick={handleStopSuggestionClick}
         handleRemoveStop={handleRemoveStop}
         handleDragEnd={handleDragEnd}
       />
