@@ -5,6 +5,9 @@ import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
+import { Sidebar } from './components/Sidebar';
+import { TripMap } from './components/TripMap';
+import type { Stop, Location } from './types';
 
 const MAPBOX_TOKEN =
   'pk.eyJ1Ijoia2V2aW5jcmNsIiwiYSI6ImNtZGh1cjVpdjA1eHcybHNmMXZ0anlhYWsifQ.sIVlX-RHn6sTzqPf-w1VPg'; // TODO: Replace with your token
@@ -318,319 +321,47 @@ const App: React.FC = () => {
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', width: '100vw' }}>
-      {/* Sidebar */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          [`& .MuiDrawer-paper`]: {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-          },
-        }}
-      >
-        <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Typography variant="h5" gutterBottom>
-            Trip Planner
-          </Typography>
-          {/* Trip Controls */}
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" gutterBottom>
-              Trip Controls
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, position: 'relative' }}>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <input
-                  ref={inputRef}
-                  placeholder="Start location"
-                  style={{ flex: 1, padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  onFocus={handleInputFocus}
-                  onBlur={handleInputBlur}
-                  autoComplete="off"
-                />
-                <button
-                  type="button"
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: 4,
-                    border: '1px solid #1976d2',
-                    background: '#fff',
-                    color: '#1976d2',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                  onClick={resetToCurrentLocation}
-                  title="Reset to current location"
-                >
-                  ⟳
-                </button>
-              </Box>
-              {showSuggestions && suggestions.length > 0 && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 40,
-                    left: 0,
-                    right: 0,
-                    zIndex: 10,
-                    bgcolor: '#fff',
-                    border: '1px solid #ccc',
-                    borderRadius: 1,
-                    boxShadow: 2,
-                  }}
-                >
-                  {suggestions.map((feature) => (
-                    <Box
-                      key={feature.id}
-                      sx={{ p: 1, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
-                      onMouseDown={() => handleSuggestionClick(feature)}
-                    >
-                      {feature.place_name}
-                    </Box>
-                  ))}
-                </Box>
-              )}
-              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                <input
-                  ref={endInputRef}
-                  placeholder="End location"
-                  style={{ flex: 1, padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
-                  value={endSearchInput}
-                  onChange={(e) => setEndSearchInput(e.target.value)}
-                  onFocus={handleEndInputFocus}
-                  onBlur={handleEndInputBlur}
-                  autoComplete="off"
-                />
-                {endLocation && (
-                  <button
-                    type="button"
-                    style={{ padding: '8px 12px', borderRadius: 4, border: '1px solid #d32f2f', background: '#fff', color: '#d32f2f', fontWeight: 600, cursor: 'pointer' }}
-                    onClick={handleClearEndLocation}
-                    title="Clear end location"
-                  >
-                    ×
-                  </button>
-                )}
-              </Box>
-              {showEndSuggestions && endSuggestions.length > 0 && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 82,
-                    left: 0,
-                    right: 0,
-                    zIndex: 10,
-                    bgcolor: '#fff',
-                    border: '1px solid #ccc',
-                    borderRadius: 1,
-                    boxShadow: 2,
-                  }}
-                >
-                  {endSuggestions.map((feature) => (
-                    <Box
-                      key={feature.id}
-                      sx={{ p: 1, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
-                      onMouseDown={() => handleEndSuggestionClick(feature)}
-                    >
-                      {feature.place_name}
-                    </Box>
-                  ))}
-                </Box>
-              )}
-            </Box>
-          </Box>
-          {/* Trip Stops */}
-          <Box sx={{ flexGrow: 1, overflowY: 'auto', mb: 2 }}>
-            <Typography variant="subtitle1" gutterBottom>
-              Trip Stops
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, position: 'relative' }}>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <input
-                  ref={stopInputRef}
-                  placeholder="Add stop (search)"
-                  style={{ flex: 1, padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
-                  value={stopSearchInput}
-                  onChange={e => setStopSearchInput(e.target.value)}
-                  onFocus={handleStopInputFocus}
-                  onBlur={handleStopInputBlur}
-                  autoComplete="off"
-                />
-              </Box>
-              {showStopSuggestions && stopSuggestions.length > 0 && (
-                <Box sx={{ position: 'absolute', top: 40, left: 0, right: 0, zIndex: 10, bgcolor: '#fff', border: '1px solid #ccc', borderRadius: 1, boxShadow: 2 }}>
-                  {stopSuggestions.map((feature) => (
-                    <Box
-                      key={feature.id}
-                      sx={{ p: 1, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
-                      onMouseDown={() => handleStopSuggestionClick(feature)}
-                    >
-                      {feature.place_name}
-                    </Box>
-                  ))}
-                </Box>
-              )}
-              {/* List of stops (draggable) */}
-              <DragDropContext onDragEnd={handleDragEnd}>
-                <Droppable droppableId="stops-droppable">
-                  {(provided) => (
-                    <Box
-                      sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                    >
-                      {stops.length === 0 && (
-                        <Typography variant="body2" color="text.secondary">No stops added.</Typography>
-                      )}
-                      {stops.map((stop, idx) => (
-                        <Draggable key={idx.toString()} draggableId={idx.toString()} index={idx}>
-                          {(provided, snapshot) => (
-                            <Box
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                bgcolor: snapshot.isDragging ? '#ffe082' : '#f5f5f5',
-                                borderRadius: 1,
-                                p: 1,
-                                boxShadow: snapshot.isDragging ? 3 : 0,
-                              }}
-                            >
-                              <Typography variant="body2" sx={{ flex: 1, mr: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stop.name}</Typography>
-                              <button
-                                type="button"
-                                style={{ background: 'none', border: 'none', color: '#d32f2f', fontWeight: 700, cursor: 'pointer', fontSize: 18 }}
-                                onClick={() => handleRemoveStop(idx)}
-                                title="Remove stop"
-                              >
-                                ×
-                              </button>
-                            </Box>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </Box>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            </Box>
-          </Box>
-          {/* Add Stop Button */}
-          <Box>
-            <button
-              style={{
-                width: '100%',
-                padding: 10,
-                borderRadius: 4,
-                background: '#1976d2',
-                color: '#fff',
-                border: 'none',
-                fontWeight: 600,
-              }}
-            >
-              + Add Stop
-            </button>
-          </Box>
-        </Box>
-      </Drawer>
-      {/* Map View */}
+      <Sidebar
+        drawerWidth={drawerWidth}
+        startSearchInput={searchInput}
+        setStartSearchInput={setSearchInput}
+        startSuggestions={suggestions}
+        showStartSuggestions={showSuggestions}
+        handleStartInputFocus={handleInputFocus}
+        handleStartInputBlur={handleInputBlur}
+        handleStartSuggestionClick={handleSuggestionClick}
+        resetToCurrentLocation={resetToCurrentLocation}
+        endSearchInput={endSearchInput}
+        setEndSearchInput={setEndSearchInput}
+        endSuggestions={endSuggestions}
+        showEndSuggestions={showEndSuggestions}
+        handleEndInputFocus={handleEndInputFocus}
+        handleEndInputBlur={handleEndInputBlur}
+        handleEndSuggestionClick={handleEndSuggestionClick}
+        endLocation={endLocation}
+        handleClearEndLocation={handleClearEndLocation}
+        stops={stops}
+        stopSearchInput={stopSearchInput}
+        setStopSearchInput={setStopSearchInput}
+        stopSuggestions={stopSuggestions}
+        showStopSuggestions={showStopSuggestions}
+        handleStopInputFocus={handleStopInputFocus}
+        handleStopInputBlur={handleStopInputBlur}
+        handleStopSuggestionClick={handleStopSuggestionClick}
+        handleRemoveStop={handleRemoveStop}
+        handleDragEnd={handleDragEnd}
+      />
       <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-        <Map
-          ref={mapRef}
-          longitude={mapView.longitude}
-          latitude={mapView.latitude}
-          zoom={mapView.zoom}
-          onMove={(evt) => setMapView(evt.viewState)}
-          style={{ width: '100%', height: '100%' }}
-          mapStyle="mapbox://styles/mapbox/streets-v11"
-          mapboxAccessToken={MAPBOX_TOKEN}
-        >
-          <NavigationControl position="top-left" />
-          <Marker
-            longitude={startLocation.longitude}
-            latitude={startLocation.latitude}
-            anchor="bottom"
-          >
-            <div
-              style={{
-                background: '#1976d2',
-                borderRadius: '50%',
-                width: 24,
-                height: 24,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#fff',
-                fontWeight: 700,
-                border: '2px solid #fff',
-                boxShadow: '0 0 4px #0003',
-              }}
-            >
-              S
-            </div>
-          </Marker>
-          {/* Only render end marker if endLocation is not null */}
-          {(() => {
-            if (endLocation === null) return null;
-            const { longitude, latitude } = endLocation;
-            return (
-              <Marker longitude={longitude} latitude={latitude} anchor="bottom">
-                <div
-                  style={{
-                    background: '#d32f2f',
-                    borderRadius: '50%',
-                    width: 24,
-                    height: 24,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontWeight: 700,
-                    border: '2px solid #fff',
-                    boxShadow: '0 0 4px #0003',
-                  }}
-                >
-                  E
-                </div>
-              </Marker>
-            );
-          })()}
-          {/* Stop markers */}
-          {stops.map((stop, idx) => (
-            <Marker
-              key={`stop-${idx}`}
-              longitude={stop.longitude}
-              latitude={stop.latitude}
-              anchor="bottom"
-            >
-              <div style={{ background: '#ffa000', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, border: '2px solid #fff', boxShadow: '0 0 4px #0003', fontSize: 12 }}>
-                {idx + 1}
-              </div>
-            </Marker>
-          ))}
-          {routeGeoJSON && (
-            <>
-              <Source
-                id="route"
-                type="geojson"
-                data={{ type: 'Feature', geometry: routeGeoJSON, properties: {} }}
-              />
-              <Layer
-                id="route-line"
-                type="line"
-                source="route"
-                layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-                paint={{ 'line-color': '#1976d2', 'line-width': 4 }}
-              />
-            </>
-          )}
-        </Map>
+        <TripMap
+          mapRef={mapRef}
+          mapView={mapView}
+          setMapView={setMapView}
+          startLocation={startLocation}
+          endLocation={endLocation}
+          stops={stops}
+          routeGeoJSON={routeGeoJSON}
+          mapboxToken={MAPBOX_TOKEN}
+        />
       </Box>
     </Box>
   );
