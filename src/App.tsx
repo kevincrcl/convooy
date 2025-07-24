@@ -23,13 +23,41 @@ const App: React.FC = () => {
                     },
                 }}
             >
-                <Box sx={{ p: 2 }}>
+                <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
                     <Typography variant="h5" gutterBottom>
                         Trip Planner
                     </Typography>
-                    <Typography variant="body1">
-                        Stops and controls will go here.
-                    </Typography>
+                    {/* Trip Controls */}
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle1" gutterBottom>
+                            Trip Controls
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            <input placeholder="Start location" style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+                            <input placeholder="End location" style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+                        </Box>
+                    </Box>
+                    {/* Trip Stops */}
+                    <Box sx={{ flexGrow: 1, overflowY: 'auto', mb: 2 }}>
+                        <Typography variant="subtitle1" gutterBottom>
+                            Trip Stops
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            {/* Placeholder stops */}
+                            <Box sx={{ p: 1, bgcolor: '#f5f5f5', borderRadius: 1, mb: 1 }}>
+                                <Typography variant="body2">Stop 1: Fuel</Typography>
+                            </Box>
+                            <Box sx={{ p: 1, bgcolor: '#f5f5f5', borderRadius: 1, mb: 1 }}>
+                                <Typography variant="body2">Stop 2: Food</Typography>
+                            </Box>
+                        </Box>
+                    </Box>
+                    {/* Add Stop Button */}
+                    <Box>
+                        <button style={{ width: '100%', padding: 10, borderRadius: 4, background: '#1976d2', color: '#fff', border: 'none', fontWeight: 600 }}>
+                            + Add Stop
+                        </button>
+                    </Box>
                 </Box>
             </Drawer>
             {/* Map View */}
