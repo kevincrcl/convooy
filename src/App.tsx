@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Map, { NavigationControl } from 'react-map-gl/mapbox';
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
@@ -8,7 +8,31 @@ const MAPBOX_TOKEN = "pk.eyJ1Ijoia2V2aW5jcmNsIiwiYSI6ImNtZGh1cjVpdjA1eHcybHNmMXZ
 
 const drawerWidth = 320;
 
+const DEFAULT_LOCATION = {
+    longitude: -98.5795, // Center of USA
+    latitude: 39.8283,
+};
+
 const App: React.FC = () => {
+    const [startLocation, setStartLocation] = useState(DEFAULT_LOCATION);
+    const [mapView, setMapView] = useState({ ...DEFAULT_LOCATION, zoom: 4 });
+
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    console.log("FART", { longitude, latitude })
+                    setStartLocation({ latitude, longitude });
+                    setMapView({ latitude, longitude, zoom: 12 });
+                },
+                () => {
+                    // If user denies or error, keep default
+                }
+            );
+        }
+    }, []);
+
     return (
         <Box sx={{ display: "flex", height: "100vh", width: "100vw" }}>
             {/* Sidebar */}
@@ -33,7 +57,12 @@ const App: React.FC = () => {
                             Trip Controls
                         </Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                            <input placeholder="Start location" style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+                            <input
+                                placeholder="Start location"
+                                style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
+                                value={`${startLocation.latitude.toFixed(5)}, ${startLocation.longitude.toFixed(5)}`}
+                                readOnly
+                            />
                             <input placeholder="End location" style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
                         </Box>
                     </Box>
@@ -63,11 +92,10 @@ const App: React.FC = () => {
             {/* Map View */}
             <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                 <Map
-                    initialViewState={{
-                        longitude: -98.5795, // Center of USA
-                        latitude: 39.8283,
-                        zoom: 4,
-                    }}
+                    longitude={mapView.longitude}
+                    latitude={mapView.latitude}
+                    zoom={mapView.zoom}
+                    onMove={evt => setMapView(evt.viewState)}
                     style={{ width: "100%", height: "100%" }}
                     mapStyle="mapbox://styles/mapbox/streets-v11"
                     mapboxAccessToken={MAPBOX_TOKEN}
