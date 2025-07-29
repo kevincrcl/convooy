@@ -83,32 +83,65 @@ export const mapboxService = {
     }
   },
 
-  // POI search
+  // POI search using Mapbox Search Box API
   async searchPOIs(category: string, bounds: [number, number, number, number], limit: number = 10) {
-    console.log(`🏪 API: Searching ${category} POIs in bounds`);
+    console.log(`🏪 API: Searching ${category} POIs using Search Box API category endpoint`);
     try {
+      // Map our categories to Search Box API category names
+      const categoryMapping = {
+        food: 'food_and_drink',
+        fuel: 'fuel',
+        tourism: 'accommodation'
+      };
+      
+      const searchBoxCategory = categoryMapping[category as keyof typeof categoryMapping] || category;
+      
       const params = new URLSearchParams({
         access_token: accessToken,
-        bbox: bounds.join(','),
-        types: 'poi',
         limit: limit.toString(),
+        bbox: bounds.join(','),
       });
       
       const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(category)}.json?${params}`
+        `https://api.mapbox.com/search/searchbox/v1/category/${searchBoxCategory}?${params}`
       );
       const data = await response.json();
       
-      const pois = (data.features || [])
-        .filter((poi: any) => poi.properties && poi.properties.category)
-        .map((poi: any) => ({
-          ...poi,
-          category,
-          displayName: `${poi.text} (${poi.properties.category})`
-        }));
+      console.log(`🔍 Debug: Search Box API category response for "${searchBoxCategory}":`, data);
       
-      console.log(`✅ API: Found ${pois.length} ${category} POIs`);
-      return pois;
+      if (data.features) {
+        const pois = data.features
+          .map((poi: any) => ({
+            id: poi.properties.mapbox_id,
+            type: 'Feature',
+            place_type: ['poi'],
+            text: poi.properties.name,
+            place_name: poi.properties.full_address || poi.properties.name,
+            center: [poi.properties.coordinates.longitude, poi.properties.coordinates.latitude],
+            geometry: {
+              type: 'Point',
+              coordinates: [poi.properties.coordinates.longitude, poi.properties.coordinates.latitude]
+            },
+            properties: {
+              category: poi.properties.poi_category?.[0] || category,
+              poi_category: poi.properties.poi_category,
+              maki: poi.properties.maki
+            },
+            category,
+            displayName: `${poi.properties.name} (${poi.properties.poi_category?.[0] || category})`
+          }));
+        
+        // Filter out duplicates after mapping
+        const uniquePois = pois.filter((poi: any, index: number, self: any[]) => 
+          index === self.findIndex((p: any) => p.id === poi.id)
+        );
+        
+        console.log(`✅ API: Found ${uniquePois.length} ${category} POIs using Search Box API`);
+        return uniquePois;
+      }
+      
+      console.log(`✅ API: Found 0 ${category} POIs using Search Box API`);
+      return [];
     } catch (error) {
       console.log(`❌ API: Error searching ${category} POIs:`, error);
       return [];

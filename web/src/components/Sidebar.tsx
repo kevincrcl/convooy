@@ -36,6 +36,9 @@ interface SidebarProps {
   handleStopSuggestionClick: (feature: any) => void;
   handleRemoveStop: (idx: number) => void;
   handleDragEnd: (result: any) => void;
+  activePOICategories: Set<string>;
+  togglePOICategory: (category: string) => void;
+  hasRoute: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -67,6 +70,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   handleStopSuggestionClick,
   handleRemoveStop,
   handleDragEnd,
+  activePOICategories,
+  togglePOICategory,
+  hasRoute,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const endInputRef = useRef<HTMLInputElement>(null);
@@ -159,6 +165,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
             />
           </Box>
         </Box>
+        {/* POI Categories */}
+        {hasRoute && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle1" gutterBottom>
+              Points of Interest
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {[
+                { key: 'food', label: '🍽️ Food & Drink', color: '#4caf50' },
+                { key: 'fuel', label: '⛽ Fuel', color: '#ff9800' },
+                { key: 'tourism', label: '🏨 Accommodation', color: '#9c27b0' }
+              ].map(({ key, label, color }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => togglePOICategory(key)}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: 4,
+                    border: `2px solid ${color}`,
+                    background: activePOICategories.has(key) ? color : '#fff',
+                    color: activePOICategories.has(key) ? '#fff' : color,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    textAlign: 'left'
+                  }}
+                  title={`${activePOICategories.has(key) ? 'Hide' : 'Show'} ${label}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </Box>
+          </Box>
+        )}
       </Box>
     </Drawer>
   );

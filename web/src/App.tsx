@@ -41,7 +41,87 @@ const App: React.FC = () => {
   const [showStopSuggestions, setShowStopSuggestions] = useState(false);
   const stopInputRef = useRef<HTMLInputElement>(null);
 
+  // POIs state
+  const [pois, setPois] = useState<any[]>([]);
+  const [activePOICategories, setActivePOICategories] = useState<Set<string>>(new Set());
+
   const mapRef = useRef<any>(null);
+  const poiSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch POIs based on current map view for specific categories
+  const fetchPOIsForMapView = useCallback(async (categories: string[]) => {
+    if (!mapRef.current || !routeGeoJSON) return;
+    
+    const map = mapRef.current.getMap();
+    if (!map) return;
+    
+    const bounds = map.getBounds();
+    const minLng = bounds.getWest();
+    const minLat = bounds.getSouth();
+    const maxLng = bounds.getEast();
+    const maxLat = bounds.getNorth();
+    
+    console.log(`🗺️ Map view bounds: [${minLng}, ${minLat}, ${maxLng}, ${maxLat}]`);
+    
+    // Search for POIs in map view bounds for specified categories
+    const allPois: any[] = [];
+    
+    for (const category of categories) {
+      const categoryPois = await mapboxService.searchPOIs(category, [minLng, minLat, maxLng, maxLat], 10);
+      allPois.push(...categoryPois);
+    }
+    
+    // Store POIs in state to display on the map
+    setPois(allPois);
+    console.log(`Found ${allPois.length} POIs in map view for categories: ${categories.join(', ')}`);
+    console.log('POIs data:', allPois);
+  }, [routeGeoJSON]);
+
+  // Toggle POI category
+  const togglePOICategory = useCallback((category: string) => {
+    setActivePOICategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(category)) {
+        newSet.delete(category);
+      } else {
+        newSet.add(category);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // Fetch POIs when active categories change
+  useEffect(() => {
+    if (!routeGeoJSON || activePOICategories.size === 0) {
+      setPois([]); // Clear POIs when no route or no active categories
+      return;
+    }
+    
+    // Clear existing timeout
+    if (poiSearchTimeoutRef.current) {
+      clearTimeout(poiSearchTimeoutRef.current);
+    }
+    
+    // Set new timeout for debounced search
+    poiSearchTimeoutRef.current = setTimeout(() => {
+      fetchPOIsForMapView(Array.from(activePOICategories));
+    }, 300); // 300ms debounce
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (poiSearchTimeoutRef.current) {
+        clearTimeout(poiSearchTimeoutRef.current);
+      }
+    };
+  }, [activePOICategories, routeGeoJSON, fetchPOIsForMapView]);
+
+  // Clear POIs when route changes
+  useEffect(() => {
+    if (!routeGeoJSON) {
+      setPois([]);
+      setActivePOICategories(new Set());
+    }
+  }, [routeGeoJSON]);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -245,40 +325,6 @@ const App: React.FC = () => {
     ], { padding: 60, duration: 1000 });
   }, [routeGeoJSON]);
 
-  // Fetch POIs along the route using SDK
-  useEffect(() => {
-    if (!routeGeoJSON || !mapRef.current) return;
-    
-    async function fetchPOIs() {
-      // Get route bounds for POI search
-      const coords = routeGeoJSON.coordinates;
-      if (!coords || coords.length === 0) return;
-      
-      // Calculate route bounds
-      let minLng = coords[0][0], minLat = coords[0][1], maxLng = coords[0][0], maxLat = coords[0][1];
-      coords.forEach(([lng, lat]: [number, number]) => {
-        if (lng < minLng) minLng = lng;
-        if (lng > maxLng) maxLng = lng;
-        if (lat < minLat) minLat = lat;
-        if (lat > maxLat) maxLat = lat;
-      });
-      
-      // Search for POIs in route bounds
-      const poiCategories = ['food', 'fuel', 'tourism'];
-      const allPois: any[] = [];
-      
-      for (const category of poiCategories) {
-        const categoryPois = await mapboxService.searchPOIs(category, [minLng, minLat, maxLng, maxLat], 10);
-        allPois.push(...categoryPois);
-      }
-      
-      // Note: We need to add pois state if we want to display POIs on the map
-      console.log(`Found ${allPois.length} POIs along route`);
-    }
-    
-    fetchPOIs();
-  }, [routeGeoJSON]);
-
   // Add POI as stop
   const handlePOIClick = (poi: any) => {
     console.log(`➕ Adding POI as stop: ${poi.displayName}`);
@@ -347,6 +393,10 @@ const App: React.FC = () => {
         stops={stops}
         handleRemoveStop={handleRemoveStop}
         handleDragEnd={handleDragEnd}
+        // POI controls
+        activePOICategories={activePOICategories}
+        togglePOICategory={togglePOICategory}
+        hasRoute={!!routeGeoJSON}
       />
       <Box sx={{ flexGrow: 1, minWidth: 0 }}>
         <TripMap
@@ -358,6 +408,8 @@ const App: React.FC = () => {
           stops={stops}
           routeGeoJSON={routeGeoJSON}
           mapboxToken={mapboxService.getToken()}
+          pois={pois}
+          onPOIClick={handlePOIClick}
         />
       </Box>
     </Box>
