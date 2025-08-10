@@ -2,37 +2,27 @@ import SwiftUI
 import MapKit
 
 struct ContentView: View {
-    @StateObject private var locationService = LocationService()
-    @StateObject private var searchService = LocationSearchService()
-    @StateObject private var routeService = RouteService()
+    @StateObject private var locationService: LocationService
+    @StateObject private var searchService: LocationSearchService
+    @StateObject private var routeService: RouteService
+    
+    // Use simple default values
     @State private var region = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+        center: CLLocationCoordinate2D(latitude: 0, longitude: 0),
         span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
     )
+    
+    init() {
+        self._locationService = StateObject(wrappedValue: LocationService())
+        self._searchService = StateObject(wrappedValue: LocationSearchService())
+        self._routeService = StateObject(wrappedValue: RouteService())
+    }
     
     var body: some View {
         NavigationView {
             ZStack(alignment: .top) {
-                Map(coordinateRegion: $region, annotationItems: allAnnotations) { annotation in
-                    MapAnnotation(coordinate: annotation.coordinate) {
-                        if annotation.type == .currentLocation {
-                            Image(systemName: "location.circle.fill")
-                                .foregroundColor(.blue)
-                                .font(.title)
-                                .background(Color.white)
-                                .clipShape(Circle())
-                                .shadow(radius: 2)
-                        } else if annotation.type == .destination {
-                            Image(systemName: "mappin.circle.fill")
-                                .foregroundColor(.red)
-                                .font(.title)
-                                .background(Color.white)
-                                .clipShape(Circle())
-                                .shadow(radius: 2)
-                        }
-                    }
-                }
-                .ignoresSafeArea(edges: .bottom)
+                mapView
+                    .ignoresSafeArea(edges: .bottom)
                 
                 VStack(spacing: 0) {
                     LocationSearchInput(searchService: searchService, routeService: routeService, locationService: locationService)
@@ -61,6 +51,14 @@ struct ContentView: View {
                 }
             }
         }
+    }
+    
+    private var mapView: some View {
+        MapKitMapView(
+            region: $region,
+            annotations: allAnnotations,
+            route: routeService.route
+        )
     }
     
     private var allAnnotations: [CustomMapAnnotation] {
@@ -144,6 +142,97 @@ struct RouteInfoPanel: View {
             let hours = minutes / 60
             let remainingMinutes = minutes % 60
             return "\(hours)h \(remainingMinutes)m"
+        }
+    }
+}
+
+struct MapKitMapView: UIViewRepresentable {
+    @Binding var region: MKCoordinateRegion
+    let annotations: [CustomMapAnnotation]
+    let route: MKRoute?
+    
+    func makeUIView(context: Context) -> MKMapView {
+        let mapView = MKMapView()
+        mapView.delegate = context.coordinator
+        mapView.showsUserLocation = false
+        return mapView
+    }
+    
+    func updateUIView(_ mapView: MKMapView, context: Context) {
+        // Update region
+        mapView.setRegion(region, animated: true)
+        
+        // Clear existing annotations and overlays
+        mapView.removeAnnotations(mapView.annotations)
+        mapView.removeOverlays(mapView.overlays)
+        
+        // Add annotations
+        for annotation in annotations {
+            let mkAnnotation = MKPointAnnotation()
+            mkAnnotation.coordinate = annotation.coordinate
+            mkAnnotation.title = annotation.type == .currentLocation ? "Current Location" : "Destination"
+            mapView.addAnnotation(mkAnnotation)
+        }
+        
+        // Add route overlay if available and zoom to show entire route
+        if let route = route {
+            mapView.addOverlay(route.polyline, level: .aboveRoads)
+            
+            // Zoom to show the entire route with some padding
+            let routeRect = route.polyline.boundingMapRect
+            let padding = UIEdgeInsets(top: 80, left: 50, bottom: 100, right: 50)
+            mapView.setVisibleMapRect(routeRect, edgePadding: padding, animated: true)
+        }
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, MKMapViewDelegate {
+        var parent: MapKitMapView
+        
+        init(_ parent: MapKitMapView) {
+            self.parent = parent
+        }
+        
+        func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+            if annotation is MKUserLocation {
+                return nil
+            }
+            
+            let identifier = "CustomAnnotation"
+            var annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier)
+            
+            if annotationView == nil {
+                annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+                annotationView?.canShowCallout = true
+            }
+            
+            // Find the corresponding custom annotation to determine the type
+            if let customAnnotation = parent.annotations.first(where: { $0.coordinate.latitude == annotation.coordinate.latitude && $0.coordinate.longitude == annotation.coordinate.longitude }) {
+                if customAnnotation.type == .currentLocation {
+                    annotationView?.image = UIImage(systemName: "location.circle.fill")?.withTintColor(.blue, renderingMode: .alwaysOriginal)
+                } else if customAnnotation.type == .destination {
+                    annotationView?.image = UIImage(systemName: "mappin.circle.fill")?.withTintColor(.red, renderingMode: .alwaysOriginal)
+                }
+            }
+            
+            return annotationView
+        }
+        
+        func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+            if let polyline = overlay as? MKPolyline {
+                let renderer = MKPolylineRenderer(polyline: polyline)
+                renderer.strokeColor = .blue
+                renderer.lineWidth = 4.0
+                return renderer
+            }
+            return MKOverlayRenderer(overlay: overlay)
+        }
+        
+        func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+            parent.region = mapView.region
         }
     }
 }
