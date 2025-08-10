@@ -32,6 +32,19 @@ The page uses the same color palette as your Convooy logo:
 - `ConvooyLogo.png` - Your app logo
 - `README.md` - This file
 
+## Favicons
+
+The page includes comprehensive favicon support for all devices:
+
+- `favicon.ico` - Standard favicon (16x16, 32x32, 48x48)
+- `favicon-16x16.png` - 16x16 PNG favicon
+- `favicon-32x32.png` - 32x32 PNG favicon  
+- `favicon-48x48.png` - 48x48 PNG favicon
+- `apple-touch-icon.png` - 180x180 for iOS devices
+- `android-chrome-192x192.png` - 192x192 for Android
+- `android-chrome-512x512.png` - 512x512 for Android
+- `site.webmanifest` - Web app manifest for PWA support
+
 ## Customization
 
 Feel free to modify the content, colors, or styling to match your preferences. The page is built with vanilla HTML, CSS, and JavaScript for easy customization. 
