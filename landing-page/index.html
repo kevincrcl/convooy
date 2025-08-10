@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convooy - Your Trip Planning Adventure Awaits!</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Comic+Neue:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #fdf6e3 0%, #f5e6d3 100%);
+            font-family: 'Comic Neue', cursive;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(255, 165, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 0, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(0, 255, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .logo-container {
+            margin: 40px 0;
+            animation: bounce 2s ease-in-out infinite;
+        }
+        
+        .logo {
+            width: 200px;
+            height: auto;
+            filter: drop-shadow(0 8px 16px rgba(128, 0, 128, 0.3));
+            transition: transform 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 4rem;
+            color: #800080;
+            text-shadow: 
+                3px 3px 0 #ffa500,
+                6px 6px 0 #ff0000,
+                9px 9px 0 #00ffff;
+            margin: 20px 0;
+            animation: rainbow 3s ease-in-out infinite;
+        }
+        
+        .tagline {
+            font-size: 1.5rem;
+            color: #ff6b35;
+            margin: 20px 0 40px;
+            font-weight: 700;
+            text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.8);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+        
+        .feature-card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 
+                0 10px 20px rgba(128, 0, 128, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border: 3px solid;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card:nth-child(1) {
+            border-color: #ffa500;
+            background: linear-gradient(145deg, #fff8e1, #ffecb3);
+        }
+        
+        .feature-card:nth-child(2) {
+            border-color: #ff0000;
+            background: linear-gradient(145deg, #ffebee, #ffcdd2);
+        }
+        
+        .feature-card:nth-child(3) {
+            border-color: #00ffff;
+            background: linear-gradient(145deg, #e0f2f1, #b2dfdb);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 
+                0 20px 40px rgba(128, 0, 128, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .feature-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.5rem;
+            color: #800080;
+            margin-bottom: 15px;
+        }
+        
+        .feature-description {
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .cta-section {
+            margin: 80px 0;
+            padding: 60px;
+            background: linear-gradient(135deg, #800080, #ffa500);
+            border-radius: 30px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.1) 10px,
+                rgba(255, 255, 255, 0.1) 20px
+            );
+            animation: move 20s linear infinite;
+        }
+        
+        .cta-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .cta-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
+        }
+        
+        .cta-description {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .coming-soon {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff0000, #ffa500, #ffff00, #00ffff);
+            background-size: 400% 400%;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.3rem;
+            text-decoration: none;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            animation: gradientShift 3s ease infinite;
+            transition: transform 0.3s ease;
+        }
+        
+        .coming-soon:hover {
+            transform: scale(1.05);
+        }
+        
+        .footer {
+            margin-top: 60px;
+            padding: 40px;
+            background: linear-gradient(135deg, #ffa500, #ff0000);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+        }
+        
+        .footer::before {
+            content: '🚗 🚙 🚐 🚌 🚎 🏎️ 🚓 🚑 🚒 🚚 🚛 🚜 🚝 🚞 🚋 🚉 🚊 🚈 🚇 🚆 🚅 🚄 🚃 🚂 🚁 🚀 🛸 🛰️ 🚁 🚂 🚃 🚄 🚅 🚆 🚇 🚈 🚊 🚉 🚋 🚞 🚝 🚜 🚛 🚚 🚒 🚑 🚓 🏎️ 🚎 🚌 🚐 🚙 🚗';
+            position: absolute;
+            top: 10px;
+            left: 0;
+            width: 100%;
+            font-size: 1.2rem;
+            animation: scroll 30s linear infinite;
+            white-space: nowrap;
+        }
+        
+        .footer-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+        
+        @keyframes rainbow {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(180deg); }
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        @keyframes move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(100px, 100px); }
+        }
+        
+        @keyframes scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        .sparkles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffff00;
+            border-radius: 50%;
+            animation: sparkle 2s linear infinite;
+        }
+        
+        @keyframes sparkle {
+            0% { 
+                opacity: 0;
+                transform: scale(0) rotate(0deg);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1) rotate(180deg);
+            }
+            100% { 
+                opacity: 0;
+                transform: scale(0) rotate(360deg);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .tagline { font-size: 1.2rem; }
+            .features { grid-template-columns: 1fr; }
+            .cta-section { padding: 40px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sparkles" id="sparkles"></div>
+    
+    <div class="container">
+        <div class="logo-container">
+            <img src="ConvooyLogo.png" alt="Convooy Logo" class="logo">
+        </div>
+        
+        <h1>Convooy</h1>
+        <p class="tagline">Your Trip Planning Adventure Awaits! 🚗✨</p>
+        
+        <div class="features">
+            <div class="feature-card">
+                <span class="feature-icon">🗺️</span>
+                <h3 class="feature-title">Smart Route Planning</h3>
+                <p class="feature-description">Plan your perfect road trip with intelligent routing that finds the best stops along the way.</p>
+            </div>
+            
+            <div class="feature-card">
+                <span class="feature-icon">📍</span>
+                <h3 class="feature-title">Stop Management</h3>
+                <p class="feature-description">Add, organize, and manage all your trip stops with our intuitive interface.</p>
+            </div>
+            
+            <div class="feature-card">
+                <span class="feature-icon">🚀</span>
+                <h3 class="feature-title">Adventure Awaits</h3>
+                <p class="feature-description">Turn every journey into an epic adventure with Convooy's powerful trip planning tools.</p>
+            </div>
+        </div>
+        
+        <div class="cta-section">
+            <div class="cta-content">
+                <h2 class="cta-title">Coming Soon to iOS! 🍎</h2>
+                <p class="cta-description">Get ready to revolutionize your road trips with the most fun and intuitive trip planning app ever created!</p>
+                <a href="#" class="coming-soon">Coming Soon!</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-content">
+                <h3>🚗 Convooy - Where Every Trip is an Adventure! 🚗</h3>
+                <p>Built with ❤️ and lots of 🎨 for iOS</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Create sparkles effect
+        function createSparkles() {
+            const sparklesContainer = document.getElementById('sparkles');
+            const sparkleCount = 50;
+            
+            for (let i = 0; i < sparkleCount; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = Math.random() * 100 + '%';
+                sparkle.style.top = Math.random() * 100 + '%';
+                sparkle.style.animationDelay = Math.random() * 2 + 's';
+                sparkle.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                sparklesContainer.appendChild(sparkle);
+            }
+        }
+        
+        // Initialize sparkles
+        createSparkles();
+        
+        // Add some interactive fun
+        document.addEventListener('click', function(e) {
+            const ripple = document.createElement('div');
+            ripple.style.position = 'absolute';
+            ripple.style.border = '2px solid #800080';
+            ripple.style.borderRadius = '50%';
+            ripple.style.pointerEvents = 'none';
+            ripple.style.left = (e.clientX - 10) + 'px';
+            ripple.style.top = (e.clientY - 10) + 'px';
+            ripple.style.width = '20px';
+            ripple.style.height = '20px';
+            ripple.style.animation = 'ripple 0.6s linear';
+            document.body.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+        
+        // Add ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html> 
