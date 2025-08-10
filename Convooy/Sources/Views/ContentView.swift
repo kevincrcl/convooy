@@ -30,7 +30,7 @@ struct ContentView: View {
                     
                     // Route info panel
                     if let route = routeService.route {
-                        RouteInfoPanel(route: route)
+                        RouteInfoPanel(route: route, destinationCoordinate: routeService.selectedDestination?.placemark.coordinate ?? CLLocationCoordinate2D(latitude: 0, longitude: 0))
                             .padding(.horizontal)
                             .padding(.top, 10)
                     }
@@ -93,6 +93,7 @@ enum AnnotationType {
 
 struct RouteInfoPanel: View {
     let route: MKRoute
+    let destinationCoordinate: CLLocationCoordinate2D
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -122,11 +123,39 @@ struct RouteInfoPanel: View {
                     .font(.subheadline)
                     .foregroundColor(.primary)
             }
+            
+            // Start Navigation Button
+            Button(action: {
+                startTurnByTurnNavigation()
+            }) {
+                HStack {
+                    Image(systemName: "location.fill")
+                        .foregroundColor(.white)
+                    Text("Start Navigation")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue)
+                .cornerRadius(10)
+            }
+            .buttonStyle(PlainButtonStyle())
         }
         .padding()
         .background(Color(.systemBackground))
         .cornerRadius(10)
         .shadow(radius: 2)
+    }
+    
+    private func startTurnByTurnNavigation() {
+        // Open the route in Apple Maps for turn-by-turn navigation
+        let destination = MKMapItem(placemark: MKPlacemark(coordinate: destinationCoordinate))
+        
+        // Open in Apple Maps
+        destination.openInMaps(launchOptions: [
+            MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
+        ])
     }
     
     private func formatDistance(_ distance: CLLocationDistance) -> String {
