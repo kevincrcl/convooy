@@ -23,6 +23,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.cassette.convooy
         INFOPLIST_FILE: Sources/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # MapBox configuration
+        MAPBOX_ACCESS_TOKEN: "$(MAPBOX_ACCESS_TOKEN)"
     info:
       path: Sources/Info.plist
       properties:
@@ -37,9 +39,18 @@ targets:
             UIWindowSceneSessionRoleApplication:
               - UISceneConfigurationName: Default Configuration
                 UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).SceneDelegate
+        # Location permissions
         NSLocationWhenInUseUsageDescription: "This app needs location access to show your current location and plan trips."
         NSLocationAlwaysAndWhenInUseUsageDescription: "This app needs location access to show your current location and plan trips."
         NSLocationAlwaysUsageDescription: "This app needs location access to show your current location and plan trips."
+        # MapBox permissions
+        NSLocationTemporaryUsageDescriptionDictionary:
+          ShowCurrentLocation: "This app needs location access to show your current location on the map."
+        # Required for MapBox
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+        # MapBox access token (will be set via environment variable)
+        MAPBOX_ACCESS_TOKEN: "$(MAPBOX_ACCESS_TOKEN)"
 
 schemes:
   Convooy:
@@ -48,6 +59,8 @@ schemes:
         Convooy: all
     run:
       config: Debug
+      environmentVariables:
+        MAPBOX_ACCESS_TOKEN: "$(MAPBOX_ACCESS_TOKEN)"
     test:
       config: Debug
     profile:

@@ -1,5 +1,5 @@
 import SwiftUI
-import MapKit
+import CoreLocation
 
 struct LocationSearchInput: View {
     @ObservedObject var searchService: LocationSearchService
@@ -47,9 +47,9 @@ struct LocationSearchInput: View {
             if isShowingSuggestions && !searchService.searchResults.isEmpty {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 0) {
-                        ForEach(searchService.searchResults, id: \.self) { result in
+                        ForEach(searchService.searchResults) { result in
                             Button(action: {
-                                let destinationName = result.name ?? "Unknown Location"
+                                let destinationName = result.name
                                 searchService.searchText = destinationName
                                 isShowingSuggestions = false
 
@@ -65,19 +65,13 @@ struct LocationSearchInput: View {
                             }) {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text(result.name ?? "Unknown Location")
+                                        Text(result.name)
                                             .font(.body)
                                             .foregroundColor(.primary)
-                                        
-                                        if let address = result.placemark.thoroughfare {
-                                            Text(address)
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
                                     }
-                                    
+
                                     Spacer()
-                                    
+
                                     Image(systemName: "location.circle")
                                         .foregroundColor(.blue)
                                 }
@@ -85,15 +79,15 @@ struct LocationSearchInput: View {
                                 .background(Color(.systemBackground))
                             }
                             .buttonStyle(PlainButtonStyle())
-                            
+
                             Divider()
                         }
                     }
+                    .background(Color(.systemBackground))
+                    .cornerRadius(10)
+                    .shadow(radius: 2)
+                    .frame(maxHeight: 200)
                 }
-                .background(Color(.systemBackground))
-                .cornerRadius(10)
-                .shadow(radius: 2)
-                .frame(maxHeight: 200)
             }
         }
         .padding(.horizontal)

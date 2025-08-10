@@ -7,25 +7,33 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1196BD18D931BF39287B7AAF /* MapBoxService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D9A328C944338BC62EE747 /* MapBoxService.swift */; };
 		122A43072E94D4CA71F5FACE /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED90B90F231AA6D51EA020 /* LocationService.swift */; };
+		14F7E236FB0AB46C08A215C8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504AB4415DE310F3EC576BF0 /* Assets.xcassets */; };
 		1E714BAD93C54EFD100A7160 /* LocationSearchInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8495F0499030B3CE848CC512 /* LocationSearchInput.swift */; };
 		32389430EABF7AEC892D4CC3 /* LocationSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4BD7BE80708E978FC234482 /* LocationSearchService.swift */; };
-		AA1C4B4091CD7DC315213632 /* Trip.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC118F68D5994CF4FDF87FB8 /* Trip.swift */; };
+		3A8FF5245FC35D46CAD8FA34 /* MapBoxConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3D701330A83839BCCA68EA /* MapBoxConfig.swift */; };
+		AE005605CA185487B3A7FE9F /* MapBoxMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA6E03EEAF4519C4B0D30A0 /* MapBoxMapView.swift */; };
 		C92A0154DAD0B5733A5C4219 /* RouteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C899AFA9C2A43B9384139337 /* RouteService.swift */; };
 		D9F15EDE24AFB9451AA68FC9 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0958B25FB639E509C81D8E5 /* App.swift */; };
+		DFE4C87289D8F0689D9AA129 /* MapBoxConfig.template.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD40DC1ADEFACBF52BDD7369 /* MapBoxConfig.template.swift */; };
 		E4B1E3E5A6764FC5E9D49578 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32E3471A71BFBE929CEA5289 /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		1928298B79C57B51F437F7CA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		32E3471A71BFBE929CEA5289 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		504AB4415DE310F3EC576BF0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		838072A060136969B37C8D07 /* Convooy.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Convooy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8495F0499030B3CE848CC512 /* LocationSearchInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchInput.swift; sourceTree = "<group>"; };
+		84D9A328C944338BC62EE747 /* MapBoxService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapBoxService.swift; sourceTree = "<group>"; };
+		8AA6E03EEAF4519C4B0D30A0 /* MapBoxMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapBoxMapView.swift; sourceTree = "<group>"; };
 		8DED90B90F231AA6D51EA020 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
 		B4BD7BE80708E978FC234482 /* LocationSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchService.swift; sourceTree = "<group>"; };
+		BD3D701330A83839BCCA68EA /* MapBoxConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapBoxConfig.swift; sourceTree = "<group>"; };
+		BD40DC1ADEFACBF52BDD7369 /* MapBoxConfig.template.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapBoxConfig.template.swift; sourceTree = "<group>"; };
 		C899AFA9C2A43B9384139337 /* RouteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteService.swift; sourceTree = "<group>"; };
 		E0958B25FB639E509C81D8E5 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
-		FC118F68D5994CF4FDF87FB8 /* Trip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trip.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -37,21 +45,23 @@
 			);
 			sourceTree = "<group>";
 		};
-		0D763BB0B6AE8289E57E2288 /* Models */ = {
+		51E4227AEB440D3471192FCE /* Config */ = {
 			isa = PBXGroup;
 			children = (
-				FC118F68D5994CF4FDF87FB8 /* Trip.swift */,
+				BD3D701330A83839BCCA68EA /* MapBoxConfig.swift */,
+				BD40DC1ADEFACBF52BDD7369 /* MapBoxConfig.template.swift */,
 			);
-			path = Models;
+			path = Config;
 			sourceTree = "<group>";
 		};
 		902363F54CF8CEFC9EB61917 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				51E4227AEB440D3471192FCE /* Config */,
 				BB5DA96A118D6A1574C202FA /* Convooy */,
-				0D763BB0B6AE8289E57E2288 /* Models */,
 				D29DCA7FC15CD8E1BDAA9809 /* Services */,
 				F46F8B3D831E08EC142FE788 /* Views */,
+				504AB4415DE310F3EC576BF0 /* Assets.xcassets */,
 				1928298B79C57B51F437F7CA /* Info.plist */,
 			);
 			path = Sources;
@@ -78,6 +88,7 @@
 			children = (
 				B4BD7BE80708E978FC234482 /* LocationSearchService.swift */,
 				8DED90B90F231AA6D51EA020 /* LocationService.swift */,
+				84D9A328C944338BC62EE747 /* MapBoxService.swift */,
 				C899AFA9C2A43B9384139337 /* RouteService.swift */,
 			);
 			path = Services;
@@ -88,6 +99,7 @@
 			children = (
 				32E3471A71BFBE929CEA5289 /* ContentView.swift */,
 				8495F0499030B3CE848CC512 /* LocationSearchInput.swift */,
+				8AA6E03EEAF4519C4B0D30A0 /* MapBoxMapView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -100,6 +112,7 @@
 			buildConfigurationList = DDB9CBE4ECF9CA499A29CFE5 /* Build configuration list for PBXNativeTarget "Convooy" */;
 			buildPhases = (
 				0CF86157A1E68B7A6BA6AA05 /* Sources */,
+				25F5610D35E532809EC8840A /* Resources */,
 			);
 			buildRules = (
 			);
@@ -142,6 +155,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		25F5610D35E532809EC8840A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				14F7E236FB0AB46C08A215C8 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		0CF86157A1E68B7A6BA6AA05 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -152,8 +176,11 @@
 				1E714BAD93C54EFD100A7160 /* LocationSearchInput.swift in Sources */,
 				32389430EABF7AEC892D4CC3 /* LocationSearchService.swift in Sources */,
 				122A43072E94D4CA71F5FACE /* LocationService.swift in Sources */,
+				3A8FF5245FC35D46CAD8FA34 /* MapBoxConfig.swift in Sources */,
+				DFE4C87289D8F0689D9AA129 /* MapBoxConfig.template.swift in Sources */,
+				AE005605CA185487B3A7FE9F /* MapBoxMapView.swift in Sources */,
+				1196BD18D931BF39287B7AAF /* MapBoxService.swift in Sources */,
 				C92A0154DAD0B5733A5C4219 /* RouteService.swift in Sources */,
-				AA1C4B4091CD7DC315213632 /* Trip.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,6 +316,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MAPBOX_ACCESS_TOKEN = "$(MAPBOX_ACCESS_TOKEN)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.cassette.convooy;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -305,6 +333,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MAPBOX_ACCESS_TOKEN = "$(MAPBOX_ACCESS_TOKEN)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.cassette.convooy;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

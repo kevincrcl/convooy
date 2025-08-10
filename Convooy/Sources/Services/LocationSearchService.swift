@@ -1,20 +1,16 @@
 import Foundation
-import MapKit
+import CoreLocation
 import Combine
 
 class LocationSearchService: NSObject, ObservableObject {
     @Published var searchText = ""
-    @Published var searchResults: [MKMapItem] = []
+    @Published var searchResults: [SearchResult] = []
     @Published var isSearching = false
     
-    private var searchCompleter = MKLocalSearchCompleter()
     private var cancellables = Set<AnyCancellable>()
-    private var searchDebounceTimer: Timer?
     
     override init() {
         super.init()
-        searchCompleter.resultTypes = .pointOfInterest
-        searchCompleter.delegate = self
         
         // Set up debounced search
         $searchText
@@ -33,38 +29,20 @@ class LocationSearchService: NSObject, ObservableObject {
         
         isSearching = true
         
-        let request = MKLocalSearch.Request()
-        request.naturalLanguageQuery = query
-        request.resultTypes = .pointOfInterest
-        
-        let search = MKLocalSearch(request: request)
-        search.start { [weak self] response, error in
-            DispatchQueue.main.async {
-                self?.isSearching = false
-                
-                if let error = error {
-                    print("Search error: \(error)")
-                    return
-                }
-                
-                self?.searchResults = response?.mapItems ?? []
-            }
+        // This will be replaced with MapBox search
+        // For now, just simulate search results
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.isSearching = false
+            self.searchResults = [
+                SearchResult(name: "\(query) Location 1", coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)),
+                SearchResult(name: "\(query) Location 2", coordinate: CLLocationCoordinate2D(latitude: 37.7849, longitude: -122.4094))
+            ]
         }
-    }
-    
-    // This method is no longer needed since we use debounced search
-    func searchLocations(query: String) {
-        // Kept for backward compatibility if needed
-        performSearch(query: query)
     }
 }
 
-extension LocationSearchService: MKLocalSearchCompleterDelegate {
-    func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        // This could be used for real-time suggestions if needed
-    }
-    
-    func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
-        print("Completer error: \(error)")
-    }
+struct SearchResult: Identifiable {
+    let id = UUID()
+    let name: String
+    let coordinate: CLLocationCoordinate2D
 } 

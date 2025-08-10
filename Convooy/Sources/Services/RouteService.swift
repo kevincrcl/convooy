@@ -1,47 +1,43 @@
 import Foundation
-import MapKit
-import Combine
+import CoreLocation
 
 class RouteService: NSObject, ObservableObject {
-    @Published var route: MKRoute?
-    @Published var selectedDestination: MKMapItem?
+    @Published var route: Route?
+    @Published var selectedDestination: SearchResult?
     @Published var isCalculatingRoute = false
     @Published var routeError: String?
-    
-    func calculateRoute(from startLocation: CLLocation, to destination: MKMapItem) {
+
+    func calculateRoute(from startLocation: CLLocation, to destination: SearchResult) {
         selectedDestination = destination
         isCalculatingRoute = true
         routeError = nil
-        
-        let request = MKDirections.Request()
-        request.source = MKMapItem(placemark: MKPlacemark(coordinate: startLocation.coordinate))
-        request.destination = destination
-        request.transportType = .automobile
-        
-        let directions = MKDirections(request: request)
-        directions.calculate { [weak self] response, error in
-            DispatchQueue.main.async {
-                self?.isCalculatingRoute = false
-                
-                if let error = error {
-                    self?.routeError = "Route calculation failed: \(error.localizedDescription)"
-                    print("Route error: \(error)")
-                    return
-                }
-                
-                guard let route = response?.routes.first else {
-                    self?.routeError = "No route found to destination"
-                    return
-                }
-                
-                self?.route = route
-            }
+
+        // This will be replaced with MapBox routing
+        // For now, just simulate route calculation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.isCalculatingRoute = false
+            
+            // Create a mock route
+            let distance = startLocation.distance(from: CLLocation(latitude: destination.coordinate.latitude, longitude: destination.coordinate.longitude))
+            let estimatedTime = distance / 500.0 // Rough estimate: 500 meters per minute
+            
+            self.route = Route(
+                distance: distance,
+                expectedTravelTime: estimatedTime * 60, // Convert to seconds
+                polyline: [] // Will be replaced with actual route coordinates
+            )
         }
     }
-    
+
     func clearRoute() {
         route = nil
         selectedDestination = nil
         routeError = nil
     }
+}
+
+struct Route {
+    let distance: CLLocationDistance
+    let expectedTravelTime: TimeInterval
+    let polyline: [CLLocationCoordinate2D] // Will contain route coordinates
 } 
