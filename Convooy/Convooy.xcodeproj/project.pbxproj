@@ -3,12 +3,15 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		122A43072E94D4CA71F5FACE /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED90B90F231AA6D51EA020 /* LocationService.swift */; };
+		1E714BAD93C54EFD100A7160 /* LocationSearchInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8495F0499030B3CE848CC512 /* LocationSearchInput.swift */; };
+		32389430EABF7AEC892D4CC3 /* LocationSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4BD7BE80708E978FC234482 /* LocationSearchService.swift */; };
 		AA1C4B4091CD7DC315213632 /* Trip.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC118F68D5994CF4FDF87FB8 /* Trip.swift */; };
+		C92A0154DAD0B5733A5C4219 /* RouteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C899AFA9C2A43B9384139337 /* RouteService.swift */; };
 		D9F15EDE24AFB9451AA68FC9 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0958B25FB639E509C81D8E5 /* App.swift */; };
 		E4B1E3E5A6764FC5E9D49578 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32E3471A71BFBE929CEA5289 /* ContentView.swift */; };
 /* End PBXBuildFile section */
@@ -16,8 +19,11 @@
 /* Begin PBXFileReference section */
 		1928298B79C57B51F437F7CA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		32E3471A71BFBE929CEA5289 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		838072A060136969B37C8D07 /* Convooy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Convooy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		838072A060136969B37C8D07 /* Convooy.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Convooy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8495F0499030B3CE848CC512 /* LocationSearchInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchInput.swift; sourceTree = "<group>"; };
 		8DED90B90F231AA6D51EA020 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
+		B4BD7BE80708E978FC234482 /* LocationSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchService.swift; sourceTree = "<group>"; };
+		C899AFA9C2A43B9384139337 /* RouteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteService.swift; sourceTree = "<group>"; };
 		E0958B25FB639E509C81D8E5 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		FC118F68D5994CF4FDF87FB8 /* Trip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trip.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -70,7 +76,9 @@
 		D29DCA7FC15CD8E1BDAA9809 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B4BD7BE80708E978FC234482 /* LocationSearchService.swift */,
 				8DED90B90F231AA6D51EA020 /* LocationService.swift */,
+				C899AFA9C2A43B9384139337 /* RouteService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -79,6 +87,7 @@
 			isa = PBXGroup;
 			children = (
 				32E3471A71BFBE929CEA5289 /* ContentView.swift */,
+				8495F0499030B3CE848CC512 /* LocationSearchInput.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -111,6 +120,8 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+				};
 			};
 			buildConfigurationList = DF74D493B5ADA3A55B43F008 /* Build configuration list for PBXProject "Convooy" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -122,6 +133,7 @@
 			);
 			mainGroup = 005D55B76E8EC87B1966E98B;
 			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 54;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -137,7 +149,10 @@
 			files = (
 				D9F15EDE24AFB9451AA68FC9 /* App.swift in Sources */,
 				E4B1E3E5A6764FC5E9D49578 /* ContentView.swift in Sources */,
+				1E714BAD93C54EFD100A7160 /* LocationSearchInput.swift in Sources */,
+				32389430EABF7AEC892D4CC3 /* LocationSearchService.swift in Sources */,
 				122A43072E94D4CA71F5FACE /* LocationService.swift in Sources */,
+				C92A0154DAD0B5733A5C4219 /* RouteService.swift in Sources */,
 				AA1C4B4091CD7DC315213632 /* Trip.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -269,13 +284,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 7323Q56UFD;
 				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = me.crcl.convooy;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cassette.convooy;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -286,13 +300,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 7323Q56UFD;
 				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = me.crcl.convooy;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cassette.convooy;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
