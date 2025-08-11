@@ -1,169 +1,63 @@
-# MapBox Integration Setup Guide
+# MapBox Setup for Convooy
 
-## 🔐 **Token Security & Configuration**
+## Adding MapBox Dependencies
 
-### **Method 1: Environment Variables (Most Secure - Recommended)**
+To use the MapBox integration in your Convooy app, you need to add the MapBox SDK to your Xcode project:
 
-#### **Option A: Set in Xcode Scheme**
-1. **Open your project** in Xcode
-2. **Select your scheme** (Convooy) from the toolbar
-3. **Click "Edit Scheme"** (or press Cmd+<)
-4. **Select "Run"** from the left sidebar
-5. **Go to "Arguments" tab**
-6. **Under "Environment Variables"**, click the **+** button
-7. **Add:**
-   - **Name:** `MAPBOX_ACCESS_TOKEN`
-   - **Value:** `your_actual_token_here`
-8. **Click "Close"**
+### 1. Add MapBox Package Dependency
 
-#### **Option B: Set in Terminal (Current Session)**
-```bash
-export MAPBOX_ACCESS_TOKEN="your_actual_token_here"
-open Convooy.xcodeproj
-```
+1. Open your project in Xcode
+2. Select your project in the navigator
+3. Select your target
+4. Go to the "Package Dependencies" tab
+5. Click the "+" button
+6. Enter the MapBox package URL: `https://github.com/mapbox/mapbox-maps-ios`
+7. Click "Add Package"
+8. Select "MapboxMaps" and click "Add Package"
 
-#### **Option C: Add to Shell Profile (Permanent)**
-```bash
-# Add to ~/.zshrc, ~/.bash_profile, etc.
-echo 'export MAPBOX_ACCESS_TOKEN="your_actual_token_here"' >> ~/.zshrc
-source ~/.zshrc
-```
+### 2. Get Your MapBox Access Token
 
-### **Method 2: Configuration File (Development Only)**
+1. Go to [MapBox Account](https://account.mapbox.com/access-tokens/)
+2. Sign in or create an account
+3. Create a new access token or use the default public token
+4. Copy the token
 
-1. **Copy the template:**
-   ```bash
-   cp Sources/Config/MapBoxConfig.template.swift Sources/Config/MapBoxConfig.swift
-   ```
+### 3. Update the Access Token in Info.plist
 
-2. **Edit the file** and replace `"your_development_token_here"` with your actual token
+1. Open `Info.plist` in Xcode
+2. Find the `MBXAccessToken` key (already added)
+3. Replace `YOUR_MAPBOX_ACCESS_TOKEN` with your actual token
+4. Build and run the project
 
-3. **⚠️ Important:** This file is in `.gitignore` to prevent committing secrets
+**Note**: The app is configured to read the token from `Info.plist` using the `MBXAccessToken` key, which is the recommended approach by MapBox for better security and configuration management.
 
-## 🚀 **Phase 1: SDK Integration (Current)**
+### 4. Features Included
 
-### **What's Already Done:**
-✅ Project configuration updated  
-✅ MapBox service created  
-✅ Map view component ready  
-✅ **NEW:** Secure token configuration system  
-✅ **NEW:** Token validation and masking  
-✅ **NEW:** Development vs production handling  
+- **Current Location Focus**: Map automatically centers on user's location
+- **Location Permissions**: Handles location access requests
+- **2D Location Puck**: Shows user's position and heading on the map
+- **Tab Navigation**: Easy switching between welcome screen and map
+- **Ready for Navigation**: Foundation set up for turn-by-turn navigation
+- **Secure Token Management**: Access token stored in Info.plist as recommended by MapBox
 
-### **Next Steps:**
+### 5. Next Steps for Turn-by-Turn Navigation
 
-#### **1. Get MapBox Access Token**
-1. Go to [MapBox Account](https://account.mapbox.com/)
-2. Sign up or log in
-3. Navigate to "Access Tokens"
-4. Create a new token or copy your default public token
-5. **Keep this token secure!**
+The current setup provides the foundation for:
+- Route planning
+- Turn-by-turn directions
+- Voice guidance
+- Traffic information
 
-#### **2. Configure Token (Choose one method above)**
+### Troubleshooting
 
-#### **3. Add MapBox SDK to Project**
-1. Open Xcode project
-2. Go to File → Add Package Dependencies
-3. Enter URL: `https://github.com/mapbox/mapbox-maps-ios`
-4. Select version: `10.0.0` or latest stable
-5. Add to your main target
+- **Build Errors**: Make sure MapBox package is properly added
+- **Location Not Working**: Check that location permissions are granted
+- **Map Not Loading**: Verify your access token is correct in Info.plist
+- **Token Error**: Ensure `MBXAccessToken` is properly set in Info.plist
 
-#### **4. Test Configuration**
-The app will now show:
-- ✅ **SDK Ready** if token is valid
-- ❌ **Invalid Token** if token is missing/invalid
-- 🔒 **Masked token** (e.g., "pk.ey...abc123") for security
+## Current App Structure
 
-## 🗺️ **Phase 2: Map Implementation (Next)**
-
-### **Planned Features:**
-- [ ] Real MapBox map display
-- [ ] Current location marker
-- [ ] Map controls and gestures
-- [ ] Zoom and pan functionality
-
-### **Files to Update:**
-- `MapBoxMapView.swift` - Replace placeholder with real map
-- `MapBoxService.swift` - Add map configuration
-
-## 🔍 **Phase 3: Search & Routing (Future)**
-
-### **Planned Features:**
-- [ ] MapBox Geocoding API integration
-- [ ] Real-time search suggestions
-- [ ] Route calculation with MapBox Directions
-- [ ] Route visualization on map
-
-### **Files to Update:**
-- `LocationSearchService.swift` - Replace with MapBox search
-- `RouteService.swift` - Replace with MapBox routing
-
-## 🧭 **Phase 4: Navigation (Future)**
-
-### **Planned Features:**
-- [ ] Turn-by-turn navigation
-- [ ] Voice guidance
-- [ ] Navigation UI controls
-- [ ] Route progress tracking
-
-## 🛠️ **Development Commands**
-
-### **Regenerate Xcode Project:**
-```bash
-xcodegen generate
-```
-
-### **Build and Run:**
-```bash
-# Make sure environment variable is set
-export MAPBOX_ACCESS_TOKEN="your_token_here"
-xcodebuild -project Convooy.xcodeproj -scheme Convooy -destination 'platform=iOS Simulator,name=iPhone 15' build
-```
-
-## 📱 **Testing**
-
-### **Current Status:**
-- ✅ App builds without errors
-- ✅ Placeholder map displays
-- ✅ Location services work
-- ✅ Search UI ready
-- ✅ **NEW:** Token validation system
-- ⏳ MapBox SDK integration pending
-
-### **Token Validation Test:**
-After setting your token, you should see:
-- ✅ **SDK Ready** status
-- 🔒 **Masked token** display
-- **No red error messages**
-
-## 🔧 **Troubleshooting**
-
-### **Common Issues:**
-1. **"Invalid Token" error**
-   - Check environment variable is set correctly
-   - Restart Xcode after setting environment variable
-   - Verify token format (should start with `pk.ey`)
-
-2. **Build errors after SDK addition**
-   - Clean build folder (Cmd+Shift+K)
-   - Check SDK version compatibility
-
-3. **Map not displaying**
-   - Verify access token is valid
-   - Check network permissions
-   - Ensure token has proper scopes
-
-### **Security Best Practices:**
-- ✅ **Never commit tokens** to git
-- ✅ **Use environment variables** for CI/CD
-- ✅ **Rotate tokens** regularly
-- ✅ **Limit token scopes** to minimum required
-- ✅ **Use different tokens** for development/production
-
-## 📚 **Resources**
-
-- [MapBox iOS SDK Documentation](https://docs.mapbox.com/ios/maps/)
-- [MapBox Access Tokens](https://docs.mapbox.com/help/glossary/access-token/)
-- [MapBox Styles](https://docs.mapbox.com/api/maps/styles/)
-- [MapBox Directions API](https://docs.mapbox.com/api/navigation/directions/)
-- [Environment Variables in Xcode](https://developer.apple.com/documentation/xcode/environment-variables) 
+- **Welcome Tab**: Shows your Convooy logo and branding
+- **Map Tab**: MapBox map focused on user's current location
+- **Location Manager**: Handles GPS permissions and updates
+- **MapBox Service**: Manages map configuration and initialization (reads token from Info.plist)
