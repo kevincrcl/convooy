@@ -41,41 +41,98 @@ struct MapBoxMapView: UIViewRepresentable {
         
         // Update route display when route changes
         if let route = navigationService.currentRoute {
-            displayRoute(route, on: mapView)
+            displayRoute(route as RouteProtocol, on: mapView)
+        } else {
+            // Clear route display if no route is set
+            clearRouteDisplay(on: mapView)
         }
     }
     
-    private func displayRoute(_ route: Route, on mapView: MapView) {
-        // Remove existing route if any
-        try? mapView.mapboxMap.removeLayer(withId: "route-layer")
-        try? mapView.mapboxMap.removeSource(withId: "route-source")
+    private func displayRoute(_ route: any RouteProtocol, on mapView: MapView) {
+        // Remove existing route and markers if any
+        clearRouteDisplay(on: mapView)
+        
+        // Extract coordinates from the route
+        let routeCoordinates = route.getCoordinates()
         
         // Create a GeoJSON source for the route
-        let routeFeature = Feature(geometry: .lineString(LineString(route.coordinates)))
+        let routeFeature = Feature(geometry: .lineString(LineString(routeCoordinates)))
         var routeSource = GeoJSONSource(id: "route-source")
         routeSource.data = .feature(routeFeature)
         
-        // Create a line layer for the route
+        // Create a line layer for the route with enhanced styling
         var routeLayer = LineLayer(id: "route-layer", source: "route-source")
         routeLayer.lineColor = .constant(StyleColor(.systemBlue))
-        routeLayer.lineWidth = .constant(6)
+        routeLayer.lineWidth = .constant(8)
         routeLayer.lineCap = .constant(.round)
         routeLayer.lineJoin = .constant(.round)
         
-        // Add source and layer to the map
+        // Add a shadow effect for the route
+        var routeShadowLayer = LineLayer(id: "route-shadow-layer", source: "route-source")
+        routeShadowLayer.lineColor = .constant(StyleColor(.black))
+        routeShadowLayer.lineWidth = .constant(10)
+        routeShadowLayer.lineCap = .constant(.round)
+        routeShadowLayer.lineJoin = .constant(.round)
+        routeShadowLayer.lineOpacity = .constant(0.3)
+        
+        // Add the source and layers to the map
         try? mapView.mapboxMap.addSource(routeSource)
+        // Add shadow layer first (bottom layer)
+        try? mapView.mapboxMap.addLayer(routeShadowLayer)
+        // Add main route layer on top
         try? mapView.mapboxMap.addLayer(routeLayer)
         
-        // Fit the map to show the entire route
-        if !route.coordinates.isEmpty {
-            let cameraOptions = CameraOptions(
-                center: route.coordinates[route.coordinates.count / 2],
-                zoom: 12
-            )
-            mapView.mapboxMap.setCamera(to: cameraOptions)
+        // Add origin and destination markers
+        if let origin = route.getOrigin() {
+            addMarker(at: origin, title: "Origin", color: UIColor.systemGreen, on: mapView)
         }
         
-        print("Route displayed on map: \(route.distance) meters, \(route.duration) seconds")
+        if let destination = route.getDestination() {
+            addMarker(at: destination, title: "Destination", color: UIColor.systemRed, on: mapView)
+        }
+        
+        // Fit the map to show the entire route with proper padding
+        if !routeCoordinates.isEmpty {
+            // Calculate the center point of the route
+            let centerLat = (routeCoordinates.first!.latitude + routeCoordinates.last!.latitude) / 2
+            let centerLon = (routeCoordinates.first!.longitude + routeCoordinates.last!.longitude) / 2
+            let center = CLLocationCoordinate2D(latitude: centerLat, longitude: centerLon)
+            
+            let cameraOptions = CameraOptions(center: center, zoom: 12)
+            mapView.mapboxMap.setCamera(to: cameraOptions)
+        }
+    }
+    
+    private func addMarker(at coordinate: CLLocationCoordinate2D, title: String, color: UIColor, on mapView: MapView) {
+        let markerFeature = Feature(geometry: .point(Point(coordinate)))
+        let markerId = "\(title.lowercased())-marker"
+        
+        var markerSource = GeoJSONSource(id: markerId)
+        markerSource.data = .feature(markerFeature)
+        
+        var markerLayer = CircleLayer(id: markerId, source: markerId)
+        markerLayer.circleRadius = .constant(8)
+        markerLayer.circleColor = .constant(StyleColor(color))
+        markerLayer.circleStrokeColor = .constant(StyleColor(.white))
+        markerLayer.circleStrokeWidth = .constant(2)
+        
+        try? mapView.mapboxMap.addSource(markerSource)
+        try? mapView.mapboxMap.addLayer(markerLayer)
+    }
+    
+    private func clearRouteDisplay(on mapView: MapView) {
+        // Remove route layers
+        try? mapView.mapboxMap.removeLayer(withId: "route-layer")
+        try? mapView.mapboxMap.removeLayer(withId: "route-shadow-layer")
+        try? mapView.mapboxMap.removeSource(withId: "route-source")
+        
+        // Remove origin marker
+        try? mapView.mapboxMap.removeLayer(withId: "origin-marker")
+        try? mapView.mapboxMap.removeSource(withId: "origin-marker")
+        
+        // Remove destination marker
+        try? mapView.mapboxMap.removeLayer(withId: "destination-marker")
+        try? mapView.mapboxMap.removeSource(withId: "destination-marker")
     }
 }
 
