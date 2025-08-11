@@ -4,7 +4,8 @@ import CoreLocation
 import MapboxSearch
 
 struct MapBoxMapView: UIViewRepresentable {
-    @ObservedObject var locationManager = LocationManager()
+    @ObservedObject var locationManager = LocationManager.shared
+    @ObservedObject var navigationService = NavigationService.shared
     
     func makeUIView(context: Context) -> MapView {
         // Create map view with basic initialization
@@ -37,11 +38,51 @@ struct MapBoxMapView: UIViewRepresentable {
                 )
             )
         }
+        
+        // Update route display when route changes
+        if let route = navigationService.currentRoute {
+            displayRoute(route, on: mapView)
+        }
+    }
+    
+    private func displayRoute(_ route: Route, on mapView: MapView) {
+        // Remove existing route if any
+        try? mapView.mapboxMap.removeLayer(withId: "route-layer")
+        try? mapView.mapboxMap.removeSource(withId: "route-source")
+        
+        // Create a GeoJSON source for the route
+        let routeFeature = Feature(geometry: .lineString(LineString(route.coordinates)))
+        var routeSource = GeoJSONSource(id: "route-source")
+        routeSource.data = .feature(routeFeature)
+        
+        // Create a line layer for the route
+        var routeLayer = LineLayer(id: "route-layer", source: "route-source")
+        routeLayer.lineColor = .constant(StyleColor(.systemBlue))
+        routeLayer.lineWidth = .constant(6)
+        routeLayer.lineCap = .constant(.round)
+        routeLayer.lineJoin = .constant(.round)
+        
+        // Add source and layer to the map
+        try? mapView.mapboxMap.addSource(routeSource)
+        try? mapView.mapboxMap.addLayer(routeLayer)
+        
+        // Fit the map to show the entire route
+        if !route.coordinates.isEmpty {
+            let cameraOptions = CameraOptions(
+                center: route.coordinates[route.coordinates.count / 2],
+                zoom: 12
+            )
+            mapView.mapboxMap.setCamera(to: cameraOptions)
+        }
+        
+        print("Route displayed on map: \(route.distance) meters, \(route.duration) seconds")
     }
 }
 
 // Location Manager to handle user location
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    static let shared = LocationManager()
+    
     private let locationManager = CLLocationManager()
     @Published var currentLocation: CLLocation?
     @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined

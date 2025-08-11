@@ -17,6 +17,9 @@ To use the MapBox integration in your Convooy app, you need to add the MapBox SD
 9. **IMPORTANT**: Also add the MapBox Search package: `https://github.com/mapbox/search-ios.git`
 10. Select **MapboxSearchUI** (for prebuilt UI components) and click "Add Package"
 11. Set version to **Exact** and enter `2.14.1`
+12. **NAVIGATION**: Add the MapBox Navigation SDK v3: `https://github.com/mapbox/mapbox-navigation-ios`
+13. Select **MapboxNavigation** and click "Add Package"
+14. **IMPORTANT**: Make sure to select both **MapboxNavigationCore** and **MapboxNavigationUIKit** when adding the package
 
 ### 2. Configure Credentials (Required for Search SDK)
 
@@ -51,45 +54,69 @@ The MapBox Search SDK requires additional setup:
 - **Location Permissions**: Handles location access requests
 - **2D Location Puck**: Shows user's position on the map
 - **Tab Navigation**: Easy switching between welcome screen and map
-- **Prebuilt Search UI**: Professional MapBox Search interface
+- **Custom Search UI**: Professional search interface with PlaceAutocomplete
 - **Real-time Search**: Live results from MapBox's global database
-- **Category Search**: Built-in search categories and suggestions
-- **Ready for Navigation**: Foundation set up for turn-by-turn navigation
+- **Professional Navigation**: Turn-by-turn navigation with Navigation SDK v3
+- **Route Rendering**: Professional route lines and navigation UI
+- **Voice Instructions**: Built-in voice guidance
+- **Traffic Avoidance**: Real-time traffic and incident avoidance
+- **Offline Support**: Offline routing capabilities
 - **Secure Token Management**: Access token stored in Info.plist as recommended by MapBox
 
 ### 5. Search Functionality
 
-The prebuilt search UI includes:
-- **Professional Search Interface**: MapBox-designed search experience
+The custom search UI includes:
+- **Professional Search Interface**: Custom search bar with autocomplete
 - **Real-time Results**: Live search from global location database
-- **Category Search**: Built-in search categories
-- **Autocomplete**: Smart suggestions as you type
-- **User Favorites**: Built-in favorites system
+- **Location Proximity**: Results based on your current location
+- **POI Filtering**: Focuses on places you can navigate to
 - **Address Formatting**: Professional address display
 
-### 6. Next Steps for Turn-by-Turn Navigation
+### 6. Navigation Functionality
 
-The current setup provides the foundation for:
-- Route planning
-- Turn-by-turn directions
-- Voice guidance
-- Traffic information
+The Navigation SDK v3 provides:
+- **Turn-by-Turn Navigation**: Professional navigation experience
+- **Voice Instructions**: Audio guidance during navigation
+- **Route Rendering**: Beautiful route lines and navigation UI
+- **Traffic Avoidance**: Real-time traffic and incident avoidance
+- **Alternative Routes**: Multiple route options
+- **Offline Support**: Navigation without internet connection
+- **Navigation Camera**: Automatic camera controls during navigation
+- **Rerouting**: Automatic route recalculation
+
+### 7. Requirements
+
+- **Swift 5.9+**: Required for Navigation SDK v3
+- **Xcode 15.0+**: Required for Navigation SDK v3
+- **iOS 14.0+**: Minimum iOS version supported
+
+### 8. Package Structure
+
+The MapBox Navigation SDK v3 includes:
+- **MapboxNavigationCore**: Core navigation functionality and types
+- **MapboxNavigationUIKit**: UI components for navigation interface
+- **MapboxDirections**: Route calculation and waypoint management
 
 ### Troubleshooting
 
-- **Build Errors**: Make sure both MapBox Maps and Search packages are properly added
+- **Build Errors**: Make sure all MapBox packages are properly added
 - **Search SDK Download Issues**: Ensure .netrc file is configured with secret token
 - **Location Not Working**: Check that location permissions are granted
 - **Map Not Loading**: Verify your access token is correct in Info.plist
 - **Search Not Working**: Ensure both MapBox packages are added and tokens are valid
+- **Navigation Not Working**: Make sure MapBox Navigation SDK v3 package is added with both Core and UIKit modules
+- **Version Compatibility**: Ensure you're using Swift 5.9+ and Xcode 15.0+
+- **Module Import Issues**: Use `import MapboxNavigationCore` and `import MapboxNavigationUIKit`
 
 ## Current App Structure
 
 - **Welcome Tab**: Shows your Convooy logo and branding
-- **Map Tab**: MapBox map with prebuilt search UI
+- **Map Tab**: MapBox map with search and navigation functionality
   - Full-screen map focused on user's current location
-  - Professional MapBox Search interface overlay
-  - Ready for destination selection and navigation
+  - Custom search interface with PlaceAutocomplete
+  - Professional navigation with Navigation SDK v3
+  - Turn-by-turn directions with voice guidance
 - **Location Manager**: Handles GPS permissions and updates
 - **MapBox Service**: Manages map configuration and initialization (reads token from Info.plist)
-- **Search Service**: Integrates with prebuilt MapBox Search UI components
+- **Search Service**: Integrates with custom search UI and triggers navigation
+- **Navigation Service**: Professional navigation using Navigation SDK v3
