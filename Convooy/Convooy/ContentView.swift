@@ -11,7 +11,7 @@ struct ContentView: View {
                 }
             
             // Map Tab
-            MapBoxMapView()
+            MapBoxSearchViewContainer()
                 .tabItem {
                     Image(systemName: "map.fill")
                     Text("Map")

@@ -1,6 +1,7 @@
 import SwiftUI
 import MapboxMaps
 import CoreLocation
+import MapboxSearch
 
 struct MapBoxMapView: UIViewRepresentable {
     @ObservedObject var locationManager = LocationManager()
