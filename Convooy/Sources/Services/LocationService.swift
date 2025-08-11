@@ -25,6 +25,7 @@ class LocationService: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         currentLocation = location
+        print("📍 Location updated: \(location.coordinate)")
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -35,7 +36,10 @@ class LocationService: NSObject, ObservableObject, CLLocationManagerDelegate {
         authorizationStatus = status
         
         if status == .authorizedWhenInUse || status == .authorizedAlways {
+            print("📍 Location permission granted, starting location updates")
             startUpdatingLocation()
+        } else if status == .denied || status == .restricted {
+            print("❌ Location permission denied or restricted")
         }
     }
 } 

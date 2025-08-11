@@ -41,7 +41,7 @@ struct ContentView: View {
                 }
                 
                 // Route Info Panel
-                if let route = routeService.currentRoute {
+                if let route = routeService.route {
                     VStack {
                         Spacer()
                         RouteInfoPanel(
@@ -69,6 +69,7 @@ struct ContentView: View {
         }
         .onAppear {
             mapBoxService.configureMapBox()
+            locationService.requestLocationPermission()
         }
     }
 }

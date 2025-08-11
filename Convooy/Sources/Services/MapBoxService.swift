@@ -10,20 +10,11 @@ class MapBoxService: ObservableObject {
     private init() {}
     
     func configureMapBox() {
-        guard let accessToken = MapBoxConfig.accessToken else {
-            configurationError = "No MapBox access token found"
-            return
-        }
-        
-        // Configure MapBox with the access token
-        ResourceOptionsManager.default.resourceOptions.accessToken = accessToken
-        
-        // Set default options
-        let options = ResourceOptions(accessToken: accessToken)
-        ResourceOptionsManager.default.resourceOptions = options
-        
+        // With MapBox SDK, the access token should be in Info.plist
+        // The SDK will automatically read it from there
         isConfigured = true
         print("✅ MapBox SDK configured successfully")
+        print("📱 Access token should be in Info.plist: MAPBOX_ACCESS_TOKEN")
     }
     
     func getMapStyleURL() -> String {

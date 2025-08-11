@@ -7,27 +7,25 @@ struct MapBoxMapView: UIViewRepresentable {
     @ObservedObject var locationService: LocationService
     
     func makeUIView(context: Context) -> MapView {
-        // Create MapBox map view
+        // Create MapBox map view - access token should be in Info.plist
         let options = MapInitOptions(
-            resourceOptions: ResourceOptions(accessToken: MapBoxConfig.accessToken ?? ""),
             styleURI: StyleURI(rawValue: MapBoxConfig.mapStyleURL)
         )
         
         let mapView = MapView(frame: .zero, mapInitOptions: options)
         
-        // Set initial camera position
+        // Enable user location first
+        mapView.location.options.puckType = .puck2D()
+        
+        // Set initial camera position - will be overridden when location is available
         let cameraOptions = CameraOptions(
             center: MapBoxConfig.defaultCenter,
             zoom: MapBoxConfig.defaultZoom
         )
         mapView.mapboxMap.setCamera(to: cameraOptions)
         
-        // Enable user location
-        mapView.location.options.puckType = .puck2D()
-        mapView.location.options.puckBearingSource = .heading
-        
         // Set delegate
-        mapView.mapboxMap.onMapLoaded.observe { _ in
+        let _ = mapView.mapboxMap.onMapLoaded.observe { _ in
             print("🗺️ MapBox map loaded successfully")
         }
         
@@ -41,7 +39,8 @@ struct MapBoxMapView: UIViewRepresentable {
                 center: location.coordinate,
                 zoom: 15.0
             )
-            mapView.mapboxMap.setCamera(to: cameraOptions, animated: true)
+            mapView.mapboxMap.setCamera(to: cameraOptions)
+            print("🗺️ Map focused on current location: \(location.coordinate)")
         }
     }
     
@@ -79,7 +78,7 @@ struct CurrentLocationButton: View {
 
 #Preview {
     MapBoxMapView(
-        locationService: LocationService(),
-        mapBoxService: MapBoxService.shared
+        mapBoxService: MapBoxService.shared,
+        locationService: LocationService()
     )
 } 
