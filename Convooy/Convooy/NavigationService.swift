@@ -7,7 +7,7 @@ import CoreLocation
 import UIKit
 
 @MainActor
-class NavigationService: ObservableObject {
+class NavigationService: ObservableObject, NavigationViewControllerDelegate {
     static let shared = NavigationService()
     
     @Published var isCalculatingRoute = false
@@ -16,12 +16,16 @@ class NavigationService: ObservableObject {
     @Published var currentRoute: MapboxDirections.Route?
     @Published var isLoading = false
     
-    // Define the Mapbox Navigation entry point
-    private lazy var mapboxNavigationProvider = MapboxNavigationProvider(coreConfig: .init())
-    private lazy var mapboxNavigation = mapboxNavigationProvider.mapboxNavigation
+    // Define the Mapbox Navigation entry point - ensure single instance
+    let mapboxNavigationProvider = MapboxNavigationProvider(coreConfig: .init())
+    lazy var mapboxNavigation = mapboxNavigationProvider.mapboxNavigation
     
-    private init() {
-        // Navigation SDK will use the MBXAccessToken from Info.plist
+    private init() {    }
+    
+    deinit {
+        print("NavigationService deinitializing")
+        // Note: Cannot access @MainActor properties in deinit
+        // Cleanup will be handled by the system when the view controller is dismissed
     }
     
     func startNavigation(to destination: CLLocationCoordinate2D, from origin: CLLocationCoordinate2D) async {
@@ -82,6 +86,9 @@ class NavigationService: ObservableObject {
             
             print("Received navigation routes: \(navigationRoutes)")
             
+            // Cache the NavigationRoutes for later use in navigation
+            cachedNavigationRoutes = navigationRoutes
+            
             // Extract the main route from navigationRoutes
             let mainNavigationRoute = navigationRoutes.mainRoute
             
@@ -108,15 +115,32 @@ class NavigationService: ObservableObject {
         }
     }
     
+    private var cachedNavigationRoutes: NavigationRoutes?
+    
     private func startTurnByTurnNavigation(with routes: [MapboxDirections.Route]) {
-        // Pass the generated navigation routes to the NavigationViewController
-        // For now, let's create a basic view controller to avoid constructor issues
-        let navigationViewController = UIViewController()
-        navigationViewController.view.backgroundColor = .white
-        navigationViewController.title = "Navigation"
-        navigationViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+        // Prevent starting navigation if already navigating
+        if isNavigating {
+            print("Navigation already in progress, ignoring start request")
+            return
+        }
         
-        print("Created basic navigation view controller with \(routes.count) routes")
+        guard let navigationRoutes = cachedNavigationRoutes else {
+            routeError = "NavigationRoutes not available for navigation"
+            return
+        }
+        
+        print("Starting turn-by-turn navigation with NavigationRoutes")
+        
+        // Create NavigationViewController with NavigationRoutes
+        // WARNING: NavigationOptions() might create its own MapboxNavigationProvider!
+        let navigationOptions = NavigationOptions(mapboxNavigation: mapboxNavigation,
+                                                  voiceController: mapboxNavigationProvider.routeVoiceController,
+                                                  eventsManager: mapboxNavigationProvider.eventsManager());
+        let navigationViewController = NavigationViewController(navigationRoutes: navigationRoutes, navigationOptions: navigationOptions)
+        navigationViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+        navigationViewController.delegate = self
+        
+        print("Created MapBox NavigationViewController with route")
         
         // Present the navigation view controller
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -129,11 +153,11 @@ class NavigationService: ObservableObject {
                 topController = presentedController
             }
             
-            print("Presenting basic navigation view controller from \(type(of: topController))")
+            print("Presenting MapBox NavigationViewController from \(type(of: topController))")
             
             topController.present(navigationViewController, animated: true) {
                 self.isNavigating = true
-                print("Basic navigation started")
+                print("Turn-by-turn navigation started successfully")
             }
         } else {
             print("Could not present navigation view controller")
@@ -180,6 +204,7 @@ class NavigationService: ObservableObject {
         isLoading = false
         isCalculatingRoute = false
         currentRoute = nil
+        cachedNavigationRoutes = nil
         print("Route cleared")
     }
     
@@ -270,6 +295,9 @@ class NavigationService: ObservableObject {
             
             print("✅ Route preview calculation completed - isLoading set to false")
             print("Received navigation routes for preview: \(navigationRoutes)")
+            
+            // Cache the NavigationRoutes for later use in navigation
+            cachedNavigationRoutes = navigationRoutes
             
             // Extract the main route from navigationRoutes for preview
             let mainNavigationRoute = navigationRoutes.mainRoute
@@ -364,6 +392,23 @@ class NavigationService: ObservableObject {
     
     func getRouteStepsCount() -> Int {
         return getRouteSteps().count
+    }
+    
+    // MARK: - NavigationViewControllerDelegate
+    
+    func navigationViewController(_ navigationViewController: NavigationViewController, didArriveAt waypoint: Waypoint) -> Bool {
+        print("Navigation completed - arrived at destination")
+        completeNavigation()
+        return true
+    }
+    
+    func navigationViewControllerDidDismiss(_ navigationViewController: NavigationViewController, byCanceling canceled: Bool) {
+        print("Navigation dismissed - canceled: \(canceled)")
+        if canceled {
+            stopNavigation()
+        } else {
+            completeNavigation()
+        }
     }
 }
 

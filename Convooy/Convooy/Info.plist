@@ -50,5 +50,9 @@
 	<string>Convooy needs access to your location to show you on the map and provide navigation features.</string>
 	<key>MBXAccessToken</key>
 	<string>pk.eyJ1Ijoia2V2aW5jcmNsIiwiYSI6ImNtZGh1cjVpdjA1eHcybHNmMXZ0anlhYWsifQ.sIVlX-RHn6sTzqPf-w1VPg</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 </dict>
 </plist>
