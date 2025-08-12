@@ -292,7 +292,9 @@ struct SearchResult {
 struct MapBoxSearchViewContainer: View {
     @StateObject private var searchService = SearchService.shared
     @ObservedObject private var navigationService = NavigationService.shared
+    @ObservedObject private var stopService = StopManagementService.shared
     @State private var isSearchPresented = false
+    @State private var isStopSelectionPresented = false
     @State private var showDestinationSelected = false
     
     var body: some View {
@@ -382,6 +384,45 @@ struct MapBoxSearchViewContainer: View {
                                             .foregroundColor(Color.white.opacity(0.9))
                                             .lineLimit(3)
                                     }
+                                    
+                                    // Stops List
+                                    if !stopService.stops.isEmpty {
+                                        Divider()
+                                            .background(Color.white.opacity(0.3))
+                                        
+                                        Text("Stops (\(stopService.stops.count))")
+                                            .font(.system(size: 12, weight: .medium))
+                                            .foregroundColor(Color.white.opacity(0.8))
+                                        
+                                        ForEach(Array(stopService.stops.enumerated()), id: \.element.id) { index, stop in
+                                            HStack {
+                                                // Stop number
+                                                Text("\(index + 1)")
+                                                    .font(.system(size: 10, weight: .bold))
+                                                    .foregroundColor(.white)
+                                                    .frame(width: 16, height: 16)
+                                                    .background(Color.blue)
+                                                    .clipShape(Circle())
+                                                
+                                                // Stop name
+                                                Text(stop.name)
+                                                    .font(.system(size: 10, weight: .medium))
+                                                    .foregroundColor(Color.white.opacity(0.9))
+                                                    .lineLimit(1)
+                                                
+                                                Spacer()
+                                                
+                                                // Remove stop button
+                                                Button(action: {
+                                                    stopService.removeStop(at: index)
+                                                }) {
+                                                    Image(systemName: "minus.circle.fill")
+                                                        .font(.system(size: 12))
+                                                        .foregroundColor(.red)
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 12)
@@ -416,9 +457,53 @@ struct MapBoxSearchViewContainer: View {
                                 }
                             }
                             
+                            // Stop Management Buttons (only show when route exists)
+                            if navigationService.currentRoute != nil {
+                                HStack(spacing: 8) {
+                                    // Add Stop Button
+                                    Button(action: {
+                                        isStopSelectionPresented = true
+                                    }) {
+                                        HStack {
+                                            Image(systemName: "plus.circle.fill")
+                                                .foregroundColor(.white)
+                                            Text("Add Stop")
+                                                .foregroundColor(.white)
+                                                .font(.system(size: 14, weight: .medium))
+                                        }
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 10)
+                                        .background(Color.blue.opacity(0.8))
+                                        .cornerRadius(20)
+                                        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                                    }
+                                    
+                                    // Clear All Stops Button (only show when there are stops)
+                                    if !stopService.stops.isEmpty {
+                                        Button(action: {
+                                            stopService.clearAllStops()
+                                        }) {
+                                            HStack {
+                                                Image(systemName: "trash.fill")
+                                                    .foregroundColor(.white)
+                                                Text("Clear Stops")
+                                                    .foregroundColor(.white)
+                                                    .font(.system(size: 14, weight: .medium))
+                                            }
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 10)
+                                            .background(Color.red.opacity(0.8))
+                                            .cornerRadius(20)
+                                            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                                        }
+                                    }
+                                }
+                            }
+                            
                             // Clear Destination Button
                             Button(action: {
                                 searchService.clearSelectedDestination()
+                                stopService.clearAllStops() // Also clear stops when clearing destination
                             }) {
                                 HStack {
                                     Image(systemName: "xmark.circle.fill")
@@ -524,6 +609,12 @@ struct MapBoxSearchViewContainer: View {
                     isSearchPresented = false
                     showDestinationSelected = true // Show success message
                 }
+            }
+        }
+        .sheet(isPresented: $isStopSelectionPresented) {
+            // Stop selection view
+            StopSelectionView(isPresented: true) {
+                isStopSelectionPresented = false
             }
         }
     }

@@ -6,6 +6,7 @@ import MapboxSearch
 struct MapBoxMapView: UIViewRepresentable {
     @ObservedObject var locationManager = LocationManager.shared
     @ObservedObject var navigationService = NavigationService.shared
+    @ObservedObject var stopService = StopManagementService.shared
     
     func makeUIView(context: Context) -> MapView {
         // Create map view with basic initialization
@@ -91,6 +92,11 @@ struct MapBoxMapView: UIViewRepresentable {
             addMarker(at: destination, title: "Destination", color: UIColor.systemRed, on: mapView)
         }
         
+        // Add stop markers
+        for (index, stop) in stopService.stops.enumerated() {
+            addStopMarker(at: stop.coordinate, title: stop.name, stopNumber: index + 1, on: mapView)
+        }
+        
         // Fit the map to show the entire route with proper padding
         if !routeCoordinates.isEmpty {
             // Calculate the center point of the route
@@ -120,6 +126,33 @@ struct MapBoxMapView: UIViewRepresentable {
         try? mapView.mapboxMap.addLayer(markerLayer)
     }
     
+    private func addStopMarker(at coordinate: CLLocationCoordinate2D, title: String, stopNumber: Int, on mapView: MapView) {
+        let markerFeature = Feature(geometry: .point(Point(coordinate)))
+        let markerId = "stop-\(stopNumber)-marker"
+        
+        var markerSource = GeoJSONSource(id: markerId)
+        markerSource.data = .feature(markerFeature)
+        
+        // Create a circle layer for the stop marker
+        var markerLayer = CircleLayer(id: markerId, source: markerId)
+        markerLayer.circleRadius = .constant(10)
+        markerLayer.circleColor = .constant(StyleColor(.systemBlue))
+        markerLayer.circleStrokeColor = .constant(StyleColor(.white))
+        markerLayer.circleStrokeWidth = .constant(3)
+        
+        // Create a symbol layer for the stop number
+        let numberLayerId = "stop-\(stopNumber)-number"
+        var numberLayer = SymbolLayer(id: numberLayerId, source: markerId)
+        numberLayer.textField = .constant("\(stopNumber)")
+        numberLayer.textColor = .constant(StyleColor(.white))
+        numberLayer.textSize = .constant(12)
+        numberLayer.textFont = .constant(["Arial Unicode MS Bold"])
+        
+        try? mapView.mapboxMap.addSource(markerSource)
+        try? mapView.mapboxMap.addLayer(markerLayer)
+        try? mapView.mapboxMap.addLayer(numberLayer)
+    }
+    
     private func clearRouteDisplay(on mapView: MapView) {
         // Remove route layers
         try? mapView.mapboxMap.removeLayer(withId: "route-layer")
@@ -133,6 +166,13 @@ struct MapBoxMapView: UIViewRepresentable {
         // Remove destination marker
         try? mapView.mapboxMap.removeLayer(withId: "destination-marker")
         try? mapView.mapboxMap.removeSource(withId: "destination-marker")
+        
+        // Remove all stop markers
+        for i in 1...20 { // Remove up to 20 stops (should be enough for most use cases)
+            try? mapView.mapboxMap.removeLayer(withId: "stop-\(i)-marker")
+            try? mapView.mapboxMap.removeLayer(withId: "stop-\(i)-number")
+            try? mapView.mapboxMap.removeSource(withId: "stop-\(i)-marker")
+        }
     }
 }
 

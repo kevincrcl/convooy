@@ -29,6 +29,11 @@ class NavigationService: ObservableObject, NavigationViewControllerDelegate {
     }
     
     func startNavigation(to destination: CLLocationCoordinate2D, from origin: CLLocationCoordinate2D) async {
+        // Start navigation with current stops
+        await startNavigationWithStops(to: destination, from: origin, stops: StopManagementService.shared.stops)
+    }
+    
+    func startNavigationWithStops(to destination: CLLocationCoordinate2D, from origin: CLLocationCoordinate2D, stops: [Stop]) async {
         // Validate coordinates
         guard CLLocationCoordinate2DIsValid(origin) else {
             routeError = "Current location is not available. Please enable location services."
@@ -44,14 +49,14 @@ class NavigationService: ObservableObject, NavigationViewControllerDelegate {
         isCalculatingRoute = true
         routeError = nil
         
-        print("Starting navigation from \(origin) to \(destination)")
+        print("Starting navigation from \(origin) to \(destination) with \(stops.count) stops")
         
-        // Create waypoints for the route
-        let originWaypoint = Waypoint(coordinate: origin, name: "Current Location")
-        let destinationWaypoint = Waypoint(coordinate: destination, name: "Destination")
+        // Create waypoints for the route including stops
+        let waypoints = StopManagementService.shared.getAllWaypoints(origin: origin, destination: destination)
+        print("Navigation waypoints: \(waypoints.map { $0.name ?? "Unknown" })")
         
         // Set options using NavigationRouteOptions for turn-by-turn navigation
-        let options = NavigationRouteOptions(waypoints: [originWaypoint, destinationWaypoint])
+        let options = NavigationRouteOptions(waypoints: waypoints)
         options.includesAlternativeRoutes = true // Include alternative routes
         
         // Request a route using RoutingProvider
@@ -98,6 +103,7 @@ class NavigationService: ObservableObject, NavigationViewControllerDelegate {
             print("Successfully extracted main route for navigation")
             print("Route distance: \(directionsRoute.distance) meters")
             print("Route duration: \(directionsRoute.expectedTravelTime) seconds")
+            print("Navigation route has \(directionsRoute.legs.count) legs (including stops)")
             
             // Collect all routes (main + alternatives) for navigation
             var allRoutes = [directionsRoute]
@@ -238,6 +244,11 @@ class NavigationService: ObservableObject, NavigationViewControllerDelegate {
     }
     
     func previewRoute(to destination: CLLocationCoordinate2D, from origin: CLLocationCoordinate2D) async {
+        // Preview route without stops
+        await previewRouteWithStops(to: destination, from: origin, stops: [])
+    }
+    
+    func previewRouteWithStops(to destination: CLLocationCoordinate2D, from origin: CLLocationCoordinate2D, stops: [Stop]) async {
         // Validate coordinates
         guard CLLocationCoordinate2DIsValid(origin) else {
             routeError = "Current location is not available. Please enable location services."
@@ -253,15 +264,15 @@ class NavigationService: ObservableObject, NavigationViewControllerDelegate {
         isCalculatingRoute = true
         routeError = nil
         
-        print("🔄 Starting route preview - isLoading set to true")
+        print("🔄 Starting route preview with \(stops.count) stops - isLoading set to true")
         print("Previewing route from \(origin) to \(destination)")
         
-        // Create waypoints for the route
-        let originWaypoint = Waypoint(coordinate: origin, name: "Current Location")
-        let destinationWaypoint = Waypoint(coordinate: destination, name: "Destination")
+        // Create waypoints for the route including stops
+        let waypoints = StopManagementService.shared.getAllWaypoints(origin: origin, destination: destination)
+        print("Created waypoints: \(waypoints.map { $0.name ?? "Unknown" })")
         
         // Set options using NavigationRouteOptions for turn-by-turn navigation
-        let options = NavigationRouteOptions(waypoints: [originWaypoint, destinationWaypoint])
+        let options = NavigationRouteOptions(waypoints: waypoints)
         
         // Request a route using RoutingProvider
         let request = mapboxNavigation.routingProvider().calculateRoutes(options: options)
@@ -309,6 +320,7 @@ class NavigationService: ObservableObject, NavigationViewControllerDelegate {
             print("✅ currentRoute has been set - UI should update now")
             print("Route distance: \(directionsRoute.distance) meters")
             print("Route duration: \(directionsRoute.expectedTravelTime) seconds")
+            print("Route has \(directionsRoute.legs.count) legs (including stops)")
             
             // Log alternative routes if available
             let altCount = navigationRoutes.alternativeRoutes.count
