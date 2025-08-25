@@ -19,6 +19,38 @@ struct ContentView: View {
     }
     
     var body: some View {
+        TabView {
+            // Map Tab
+            MapTabView(
+                locationService: locationService,
+                searchService: searchService,
+                routeService: routeService,
+                region: $region
+            )
+            .tabItem {
+                Image(systemName: "map.fill")
+                Text("Map")
+            }
+            
+            // Trips Tab
+            TripsTabView()
+                .tabItem {
+                    Image(systemName: "car.fill")
+                    Text("Trips")
+                }
+        }
+        .accentColor(.blue)
+    }
+}
+    
+// MARK: - Map Tab View
+struct MapTabView: View {
+    let locationService: LocationService
+    let searchService: LocationSearchService
+    let routeService: RouteService
+    @Binding var region: MKCoordinateRegion
+    
+    var body: some View {
         NavigationView {
             ZStack(alignment: .top) {
                 mapView
@@ -38,7 +70,7 @@ struct ContentView: View {
                     Spacer()
                 }
             }
-            .navigationTitle("Convooy")
+            .navigationTitle("Map")
             .navigationBarTitleDisplayMode(.large)
             .onAppear {
                 locationService.requestLocationPermission()
@@ -77,6 +109,72 @@ struct ContentView: View {
         }
         
         return annotations
+    }
+}
+
+// MARK: - Trips Tab View
+struct TripsTabView: View {
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                Spacer()
+                
+                VStack(spacing: 16) {
+                    Image(systemName: "car.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.blue)
+                    
+                    Text("Trip Planning")
+                        .font(.title)
+                        .fontWeight(.bold)
+                    
+                    Text("Plan your trips, organize vehicles, and coordinate with your group")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+                
+                VStack(spacing: 12) {
+                    NavigationLink(destination: TripCreateView()) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                            Text("Create New Trip")
+                        }
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(12)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    NavigationLink(destination: TripOverviewView(tripId: "mock-trip-1")) {
+                        HStack {
+                            Image(systemName: "list.bullet")
+                            Text("View Sample Trip")
+                        }
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.blue, lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+                .padding(.horizontal)
+                
+                Spacer()
+            }
+            .navigationTitle("Trips")
+            .navigationBarTitleDisplayMode(.large)
+        }
     }
 }
 

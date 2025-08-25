@@ -11,6 +11,26 @@ The Trip feature enables users to:
 - Track trip status through a state machine
 - Plan routes with real-time computation
 
+## Navigation Requirements
+**IMPORTANT**: When implementing new features, always consider and implement navigation access. Choose one of these approaches:
+
+1. **Bottom Tab Navigation** (Recommended for main features):
+   - Add new tab to the main `TabView` in `ContentView`
+   - Use appropriate SF Symbols and clear labels
+   - Follow the existing pattern: Map, Trips, [New Feature]
+
+2. **Hamburger/Side Menu Navigation** (For secondary features):
+   - Add to a side menu or hamburger menu
+   - Group related features together
+   - Ensure accessibility and clear hierarchy
+
+3. **Main Banner Navigation** (For feature categories):
+   - Add navigation buttons to main screens
+   - Use consistent styling and clear call-to-action
+   - Consider user flow and discoverability
+
+**Current Implementation**: Trip feature uses bottom tab navigation with "Map" and "Trips" tabs, following Spotify-style design patterns.
+
 ## Architecture
 
 ### MVVM Pattern
