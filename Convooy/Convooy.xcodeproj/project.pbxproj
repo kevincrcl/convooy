@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		02E153A43A48B64B7D03918C /* TripVehiclesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E607287094DB3C523EE1213 /* TripVehiclesView.swift */; };
 		0EC4CF4A6EF3477A767521D0 /* RoutingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FF228FA18B27B48BD8EECFB /* RoutingService.swift */; };
+		103EFD29612F5AE590871AA4 /* MapboxConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E1C9F544BA1E5BE44FA23FE /* MapboxConfig.swift */; };
 		10F69C26D7CD8F24F90E0E52 /* TripInvitesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5AB59480D35E345E89430EA /* TripInvitesViewModel.swift */; };
 		122A43072E94D4CA71F5FACE /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED90B90F231AA6D51EA020 /* LocationService.swift */; };
 		14F7E236FB0AB46C08A215C8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504AB4415DE310F3EC576BF0 /* Assets.xcassets */; };
@@ -22,6 +23,7 @@
 		682021CFAE1B3EDFCCEBAE82 /* RouteSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2D86D80ECE0947BCF3B9C95 /* RouteSummary.swift */; };
 		7043C85A4BD213DC0DA93807 /* TripCreateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FE33A2967DBA143836A26E9 /* TripCreateViewModel.swift */; };
 		8930F834C688DC9C6D3E369B /* TripRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289F37A4C78A540A9FF4A7F5 /* TripRepository.swift */; };
+		9AC134BEF9B767BA8239E43A /* MapboxSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA39C28AB03B8C5397369C3A /* MapboxSearchService.swift */; };
 		A128AC18622492CB9AB6B79D /* TripOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A186464E94306AFD2B9B2094 /* TripOverviewView.swift */; };
 		A180FF2B435202AA83385A6B /* TripCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A607A9607E5356D7F040B8 /* TripCreateView.swift */; };
 		A5BCBB5128C04EAD489E1CE5 /* VehicleRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF57037A9CB9C0B8EA53FDF /* VehicleRepository.swift */; };
@@ -53,6 +55,7 @@
 		42A4B5350EE1691CA67A04F2 /* TripInvitesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripInvitesView.swift; sourceTree = "<group>"; };
 		4835A341FBEF58AD40E6C69E /* ParticipantAvatarRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantAvatarRow.swift; sourceTree = "<group>"; };
 		486FF6595BBBB01D22EAD6FA /* PlaceSearchField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceSearchField.swift; sourceTree = "<group>"; };
+		4E1C9F544BA1E5BE44FA23FE /* MapboxConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapboxConfig.swift; sourceTree = "<group>"; };
 		504AB4415DE310F3EC576BF0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		576F37E12E593E9D4CA7ED9A /* TripVehiclesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripVehiclesViewModel.swift; sourceTree = "<group>"; };
 		62098624C87D1E7EB5A44CF8 /* ParticipantRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantRepository.swift; sourceTree = "<group>"; };
@@ -69,6 +72,7 @@
 		A186464E94306AFD2B9B2094 /* TripOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripOverviewView.swift; sourceTree = "<group>"; };
 		A2D86D80ECE0947BCF3B9C95 /* RouteSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteSummary.swift; sourceTree = "<group>"; };
 		A5418BA598D9A9E27FBFAAB0 /* Place.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
+		AA39C28AB03B8C5397369C3A /* MapboxSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapboxSearchService.swift; sourceTree = "<group>"; };
 		B4BD7BE80708E978FC234482 /* LocationSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchService.swift; sourceTree = "<group>"; };
 		B5AB59480D35E345E89430EA /* TripInvitesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripInvitesViewModel.swift; sourceTree = "<group>"; };
 		BB6A19DE0941A3520D79041C /* Trip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trip.swift; sourceTree = "<group>"; };
@@ -136,6 +140,14 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		51E4227AEB440D3471192FCE /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				4E1C9F544BA1E5BE44FA23FE /* MapboxConfig.swift */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		650950FC5EA9DA005DD49286 /* Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -174,6 +186,7 @@
 		902363F54CF8CEFC9EB61917 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				51E4227AEB440D3471192FCE /* Config */,
 				BB5DA96A118D6A1574C202FA /* Convooy */,
 				F164B457F3FC61E0487E7691 /* Features */,
 				D29DCA7FC15CD8E1BDAA9809 /* Services */,
@@ -214,6 +227,7 @@
 			children = (
 				B4BD7BE80708E978FC234482 /* LocationSearchService.swift */,
 				8DED90B90F231AA6D51EA020 /* LocationService.swift */,
+				AA39C28AB03B8C5397369C3A /* MapboxSearchService.swift */,
 				C899AFA9C2A43B9384139337 /* RouteService.swift */,
 			);
 			path = Services;
@@ -321,6 +335,8 @@
 				1E714BAD93C54EFD100A7160 /* LocationSearchInput.swift in Sources */,
 				32389430EABF7AEC892D4CC3 /* LocationSearchService.swift in Sources */,
 				122A43072E94D4CA71F5FACE /* LocationService.swift in Sources */,
+				103EFD29612F5AE590871AA4 /* MapboxConfig.swift in Sources */,
+				9AC134BEF9B767BA8239E43A /* MapboxSearchService.swift in Sources */,
 				BF18D59B575E6CB3C08B74E9 /* Participant.swift in Sources */,
 				354D6A8C5D0705069626FDE2 /* ParticipantAvatarRow.swift in Sources */,
 				ADDC7A3AF44B7F84A40667A9 /* ParticipantRepository.swift in Sources */,

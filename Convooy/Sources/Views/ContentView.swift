@@ -3,7 +3,7 @@ import MapKit
 
 struct ContentView: View {
     @StateObject private var locationService: LocationService
-    @StateObject private var searchService: LocationSearchService
+    @StateObject private var searchService: MockMapboxSearchService
     @StateObject private var routeService: RouteService
     
     // Use simple default values
@@ -14,7 +14,7 @@ struct ContentView: View {
     
     init() {
         self._locationService = StateObject(wrappedValue: LocationService())
-        self._searchService = StateObject(wrappedValue: LocationSearchService())
+        self._searchService = StateObject(wrappedValue: MockMapboxSearchService())
         self._routeService = StateObject(wrappedValue: RouteService())
     }
     
@@ -46,7 +46,7 @@ struct ContentView: View {
 // MARK: - Map Tab View
 struct MapTabView: View {
     let locationService: LocationService
-    let searchService: LocationSearchService
+    let searchService: MockMapboxSearchService
     let routeService: RouteService
     @Binding var region: MKCoordinateRegion
     
@@ -57,7 +57,7 @@ struct MapTabView: View {
                     .ignoresSafeArea(edges: .bottom)
                 
                 VStack(spacing: 0) {
-                    LocationSearchInput(searchService: searchService, routeService: routeService, locationService: locationService)
+                    LocationSearchInput<MockMapboxSearchService>(searchService: searchService, routeService: routeService, locationService: locationService)
                         .padding(.top, 60)
                     
                     // Route info panel
