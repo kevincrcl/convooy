@@ -153,6 +153,61 @@ struct MapBoxMapView: UIViewRepresentable {
         try? mapView.mapboxMap.addLayer(numberLayer)
     }
     
+    private func fitMapToShowAllPoints(routeCoordinates: [CLLocationCoordinate2D], stops: [Stop], on mapView: MapView) {
+        // Collect all points that need to be visible
+        var allPoints = routeCoordinates
+        
+        // Add stop coordinates
+        for stop in stops {
+            allPoints.append(stop.coordinate)
+        }
+        
+        guard !allPoints.isEmpty else { return }
+        
+        // Calculate bounding box
+        let latitudes = allPoints.map { $0.latitude }
+        let longitudes = allPoints.map { $0.longitude }
+        
+        let minLat = latitudes.min()!
+        let maxLat = latitudes.max()!
+        let minLon = longitudes.min()!
+        let maxLon = longitudes.max()!
+        
+        // Calculate center point
+        let centerLat = (minLat + maxLat) / 2
+        let centerLon = (minLon + maxLon) / 2
+        let center = CLLocationCoordinate2D(latitude: centerLat, longitude: centerLon)
+        
+        // Calculate span and determine appropriate zoom level
+        let latSpan = maxLat - minLat
+        let lonSpan = maxLon - minLon
+        let maxSpan = max(latSpan, lonSpan)
+        
+        // Determine zoom level based on span with some padding
+        let paddedSpan = maxSpan * 1.3 // Add 30% padding
+        let zoom: Double
+        
+        if paddedSpan > 10 {
+            zoom = 6  // Very wide area
+        } else if paddedSpan > 5 {
+            zoom = 8  // Wide area
+        } else if paddedSpan > 1 {
+            zoom = 10 // Medium area
+        } else if paddedSpan > 0.5 {
+            zoom = 12 // Smaller area
+        } else if paddedSpan > 0.1 {
+            zoom = 14 // Local area
+        } else {
+            zoom = 15 // Very local area
+        }
+        
+        // Set camera with calculated center and zoom
+        let cameraOptions = CameraOptions(center: center, zoom: zoom)
+        mapView.mapboxMap.setCamera(to: cameraOptions)
+        
+        print("📍 Fitted map to show route with \(stops.count) stops - zoom: \(zoom), center: \(center)")
+    }
+    
     private func clearRouteDisplay(on mapView: MapView) {
         // Remove route layers
         try? mapView.mapboxMap.removeLayer(withId: "route-layer")

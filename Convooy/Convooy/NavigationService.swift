@@ -442,6 +442,6 @@ extension MapboxDirections.Route: RouteProtocol {
     }
     
     func getDestination() -> CLLocationCoordinate2D? {
-        return self.legs.first?.destination?.coordinate
+        return self.legs.last?.destination?.coordinate
     }
 }
