@@ -7,8 +7,19 @@ import {
 } from '../models/types';
 import { asyncHandler } from '../middleware/errorHandler';
 import { formatShareCode } from '../utils/shareCode';
+import { ValidationError } from '../utils/errors';
 
 const tripService = new TripService();
+
+/**
+ * Helper function to validate required parameters
+ */
+function validateParam(param: string | undefined, paramName: string): string {
+  if (!param) {
+    throw new ValidationError(`${paramName} is required`);
+  }
+  return param;
+}
 
 /**
  * Create a new trip
@@ -29,7 +40,7 @@ export const createTrip = asyncHandler(async (req: Request, res: Response): Prom
  * GET /api/trips/:shareCode
  */
 export const getTripByShareCode = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { shareCode } = req.params;
+  const shareCode = validateParam(req.params.shareCode, 'shareCode');
   const trip = await tripService.getTripByShareCode(shareCode);
   
   res.json({
@@ -43,7 +54,7 @@ export const getTripByShareCode = asyncHandler(async (req: Request, res: Respons
  * PUT /api/trips/:shareCode
  */
 export const updateTrip = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { shareCode } = req.params;
+  const shareCode = validateParam(req.params.shareCode, 'shareCode');
   const data = req.body as UpdateTripRequest;
   
   const trip = await tripService.updateTrip(shareCode, data);
@@ -59,7 +70,7 @@ export const updateTrip = asyncHandler(async (req: Request, res: Response): Prom
  * DELETE /api/trips/:shareCode
  */
 export const deleteTrip = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { shareCode } = req.params;
+  const shareCode = validateParam(req.params.shareCode, 'shareCode');
   
   await tripService.deleteTrip(shareCode);
   
@@ -71,7 +82,7 @@ export const deleteTrip = asyncHandler(async (req: Request, res: Response): Prom
  * GET /api/trips/:shareCode/share
  */
 export const getShareInfo = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { shareCode } = req.params;
+  const shareCode = validateParam(req.params.shareCode, 'shareCode');
   
   // Verify trip exists
   const exists = await tripService.tripExists(shareCode);
@@ -102,7 +113,7 @@ export const getShareInfo = asyncHandler(async (req: Request, res: Response): Pr
  * POST /api/trips/join/:shareCode
  */
 export const joinTrip = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { shareCode } = req.params;
+  const shareCode = validateParam(req.params.shareCode, 'shareCode');
   const trip = await tripService.getTripByShareCode(shareCode);
   
   // Here you could track join events, participant counts, etc.
@@ -119,7 +130,7 @@ export const joinTrip = asyncHandler(async (req: Request, res: Response): Promis
  * GET /api/trips/:shareCode/stats
  */
 export const getTripStats = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { shareCode } = req.params;
+  const shareCode = validateParam(req.params.shareCode, 'shareCode');
   const stats = await tripService.getTripStats(shareCode);
   
   res.json({

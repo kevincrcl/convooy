@@ -1,7 +1,18 @@
-version: '3.8'
+# Convooy Backend Docker Compose Configuration
+# 
+# Database Setup:
+# - PostgreSQL database is automatically created
+# - Prisma handles schema initialization (no init.sql needed)
+# - Database schema is pushed on API container startup
+#
+# Usage:
+#   docker compose up          # Start all services
+#   docker compose up postgres # Start only database
+#   docker compose logs api    # View API logs
 
 services:
   # PostgreSQL Database
+  # Note: Database schema is managed by Prisma migrations, not init.sql
   postgres:
     image: postgres:15-alpine
     container_name: convooy-postgres
@@ -14,7 +25,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U convooy_user -d convooy_db"]
       interval: 10s
@@ -50,11 +60,14 @@ services:
       - DATABASE_URL=postgresql://convooy_user:convooy_password@postgres:5432/convooy_db
       - PORT=3001
       - CORS_ORIGIN=http://localhost:3000
+      - OPENSSL_CONF=/dev/null
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - ./logs:/app/logs
+    # Initialize database schema with Prisma on startup
+    command: sh -c "npx prisma db push && yarn start"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
       interval: 30s

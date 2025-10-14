@@ -6,15 +6,26 @@ import {
   ReorderStopsRequest 
 } from '../models/types';
 import { asyncHandler } from '../middleware/errorHandler';
+import { ValidationError } from '../utils/errors';
 
 const stopService = new StopService();
+
+/**
+ * Helper function to validate required parameters
+ */
+function validateParam(param: string | undefined, paramName: string): string {
+  if (!param) {
+    throw new ValidationError(`${paramName} is required`);
+  }
+  return param;
+}
 
 /**
  * Add a stop to a trip
  * POST /api/trips/:shareCode/stops
  */
 export const addStop = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { shareCode } = req.params;
+  const shareCode = validateParam(req.params.shareCode, 'shareCode');
   const data = req.body as CreateStopRequest;
   
   const stop = await stopService.addStop(shareCode, data);
@@ -30,7 +41,8 @@ export const addStop = asyncHandler(async (req: Request, res: Response): Promise
  * PUT /api/trips/:shareCode/stops/:stopId
  */
 export const updateStop = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { shareCode, stopId } = req.params;
+  const shareCode = validateParam(req.params.shareCode, 'shareCode');
+  const stopId = validateParam(req.params.stopId, 'stopId');
   const data = req.body as UpdateStopRequest;
   
   const stop = await stopService.updateStop(shareCode, stopId, data);
@@ -46,7 +58,8 @@ export const updateStop = asyncHandler(async (req: Request, res: Response): Prom
  * DELETE /api/trips/:shareCode/stops/:stopId
  */
 export const removeStop = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { shareCode, stopId } = req.params;
+  const shareCode = validateParam(req.params.shareCode, 'shareCode');
+  const stopId = validateParam(req.params.stopId, 'stopId');
   
   await stopService.removeStop(shareCode, stopId);
   
@@ -58,7 +71,7 @@ export const removeStop = asyncHandler(async (req: Request, res: Response): Prom
  * PUT /api/trips/:shareCode/stops/reorder
  */
 export const reorderStops = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { shareCode } = req.params;
+  const shareCode = validateParam(req.params.shareCode, 'shareCode');
   const data = req.body as ReorderStopsRequest;
   
   const stops = await stopService.reorderStops(shareCode, data);
@@ -74,7 +87,7 @@ export const reorderStops = asyncHandler(async (req: Request, res: Response): Pr
  * GET /api/trips/:shareCode/stops
  */
 export const getStops = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { shareCode } = req.params;
+  const shareCode = validateParam(req.params.shareCode, 'shareCode');
   
   const stops = await stopService.getStopsByTrip(shareCode);
   

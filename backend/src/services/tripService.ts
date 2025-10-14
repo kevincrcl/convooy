@@ -38,7 +38,7 @@ export class TripService {
     const trip = await prisma.trip.create({
       data: {
         shareCode,
-        name: data.name,
+        name: data.name || null,
         destination: data.destination,
       },
       include: {
@@ -87,12 +87,14 @@ export class TripService {
       throw new NotFoundError('Trip');
     }
 
+    // Build update data object, filtering out undefined values
+    const updateData: any = {};
+    if (data.name !== undefined) updateData.name = data.name || null;
+    if (data.destination !== undefined) updateData.destination = data.destination;
+
     const trip = await prisma.trip.update({
       where: { shareCode },
-      data: {
-        name: data.name,
-        destination: data.destination,
-      },
+      data: updateData,
       include: {
         stops: {
           orderBy: { order: 'asc' }

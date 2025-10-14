@@ -8,6 +8,21 @@ import {
   ReorderStopsRequest 
 } from '../models/types';
 
+// Internal types for better type safety
+interface StopUpdateData {
+  name?: string;
+  latitude?: number;
+  longitude?: number;
+  address?: string | null;
+}
+
+interface StopWhereClause {
+  tripId: string;
+  id?: { not: string };
+  latitude: { gte: number; lte: number };
+  longitude: { gte: number; lte: number };
+}
+
 export class StopService {
   /**
    * Add a new stop to a trip
@@ -43,7 +58,7 @@ export class StopService {
         name: data.name,
         latitude: data.latitude,
         longitude: data.longitude,
-        address: data.address,
+        address: data.address || null,
         order: nextOrder,
       }
     });
@@ -99,14 +114,16 @@ export class StopService {
       }
     }
 
+    // Build update data object, filtering out undefined values
+    const updateData: StopUpdateData = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.latitude !== undefined) updateData.latitude = data.latitude;
+    if (data.longitude !== undefined) updateData.longitude = data.longitude;
+    if (data.address !== undefined) updateData.address = data.address || null;
+
     const stop = await prisma.stop.update({
       where: { id: stopId },
-      data: {
-        name: data.name,
-        latitude: data.latitude,
-        longitude: data.longitude,
-        address: data.address,
-      }
+      data: updateData
     });
 
     return this.formatStopResponse(stop);
@@ -234,24 +251,30 @@ export class StopService {
     latitude: number, 
     longitude: number, 
     excludeStopId?: string
-  ): Promise<any | null> {
+  ): Promise<{ id: string; latitude: number; longitude: number } | null> {
     // Simple distance calculation (not perfect for all latitudes, but good enough for ~10m)
     const latDelta = 0.0001; // ~11 meters at equator
     const lonDelta = 0.0001; // ~11 meters at equator
 
-    const stops = await prisma.stop.findMany({
-      where: {
-        tripId,
-        id: excludeStopId ? { not: excludeStopId } : undefined,
-        latitude: {
-          gte: latitude - latDelta,
-          lte: latitude + latDelta,
-        },
-        longitude: {
-          gte: longitude - lonDelta,
-          lte: longitude + lonDelta,
-        }
+    // Build where clause, filtering out undefined values
+    const whereClause: StopWhereClause = {
+      tripId,
+      latitude: {
+        gte: latitude - latDelta,
+        lte: latitude + latDelta,
+      },
+      longitude: {
+        gte: longitude - lonDelta,
+        lte: longitude + lonDelta,
       }
+    };
+
+    if (excludeStopId) {
+      whereClause.id = { not: excludeStopId };
+    }
+
+    const stops = await prisma.stop.findMany({
+      where: whereClause
     });
 
     // More precise distance check
@@ -305,15 +328,29 @@ export class StopService {
   /**
    * Format database stop to API response
    */
-  private formatStopResponse(stop: any): StopResponse {
-    return {
+  private formatStopResponse(stop: {
+    id: string;
+    name: string;
+    latitude: number;
+    longitude: number;
+    address: string | null;
+    order: number;
+    addedAt: Date;
+  }): StopResponse {
+    const response: StopResponse = {
       id: stop.id,
       name: stop.name,
       latitude: stop.latitude,
       longitude: stop.longitude,
-      address: stop.address,
       order: stop.order,
       addedAt: stop.addedAt.toISOString(),
     };
+
+    // Only include address if it's not null
+    if (stop.address) {
+      response.address = stop.address;
+    }
+
+    return response;
   }
 }

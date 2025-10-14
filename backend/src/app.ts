@@ -27,7 +27,7 @@ const io = new SocketIOServer(server, {
 
 // Middleware
 app.use(helmet()); // Security headers
-app.use(compression()); // Gzip compression
+app.use(compression() as unknown as express.RequestHandler); // Gzip compression
 
 // CORS configuration
 app.use(cors({

@@ -86,6 +86,13 @@ export function sendErrorResponse(res: Response, error: unknown): void {
   // Log error for debugging (in production, use proper logging service)
   if (errorResponse.statusCode >= 500) {
     console.error('Server Error:', error);
+  } else if (errorResponse.statusCode >= 400 && process.env.NODE_ENV === 'development') {
+    // Log client errors in development for debugging
+    console.warn('Client Error:', {
+      error: errorResponse.error,
+      message: errorResponse.message,
+      statusCode: errorResponse.statusCode
+    });
   }
 
   res.status(errorResponse.statusCode).json(errorResponse);
