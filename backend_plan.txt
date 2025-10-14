@@ -1,0 +1,165 @@
+I'll analyze the current iOS app structure and create a plan for a TypeScript backend to enable trip sharing. Let me first explore the existing codebase to understand the current data models and functionality.
+
+[4 tools called]
+
+Now let me check the SearchService to understand how destinations are handled:
+
+[1 tool called]
+
+Perfect! Now I have a clear understanding of the current iOS app structure. Let me create a comprehensive plan for the TypeScript backend MVP.
+
+[1 tool called]
+
+Based on my analysis of the iOS app, here's a comprehensive plan for implementing a TypeScript backend MVP to enable trip sharing:
+
+## Current iOS App Analysis
+
+From the codebase, I can see:
+
+**Data Models:**
+- `Stop`: Has `id`, `name`, `coordinate` (lat/lng), and `address`
+- `SearchResult`: Represents destinations with `name` and `coordinate`
+- Trips are currently implicit - a destination + list of stops
+
+**Key Services:**
+- `StopManagementService`: Manages stops array, add/remove/reorder operations
+- `NavigationService`: Handles route calculation and navigation
+- `SearchService`: Manages destination selection
+
+## TypeScript Backend MVP Plan
+
+### 1. **Architecture & Tech Stack**
+```
+- **Framework**: Express.js with TypeScript
+- **Database**: PostgreSQL with Prisma ORM (for structured data + easy migrations)
+- **Real-time**: Socket.IO for live updates
+- **Validation**: Zod for request/response validation
+- **Authentication**: Simple token-based (no user accounts yet)
+- **Deployment**: Docker-ready setup
+```
+
+### 2. **Core Data Models**
+
+```typescript
+// Trip Model
+interface Trip {
+  id: string;              // UUID
+  shareCode: string;       // 6-8 character shareable code
+  name?: string;           // Optional trip name
+  destination: Location;   // Final destination
+  stops: Stop[];           // Ordered list of stops
+  createdAt: Date;
+  updatedAt: Date;
+  isActive: boolean;       // For soft deletion
+}
+
+// Stop Model (matches iOS)
+interface Stop {
+  id: string;              // UUID
+  tripId: string;          // Foreign key
+  name: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+  order: number;           // Position in the trip
+  addedAt: Date;
+}
+
+// Location Model (for destinations)
+interface Location {
+  name: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+}
+```
+
+### 3. **API Endpoints**
+
+```typescript
+// Trip Management
+POST   /api/trips                    // Create new trip
+GET    /api/trips/:shareCode         // Get trip by share code
+PUT    /api/trips/:shareCode         // Update trip details
+DELETE /api/trips/:shareCode         // Delete trip
+
+// Stop Management
+POST   /api/trips/:shareCode/stops   // Add stop to trip
+PUT    /api/trips/:shareCode/stops/:stopId  // Update stop
+DELETE /api/trips/:shareCode/stops/:stopId  // Remove stop
+PUT    /api/trips/:shareCode/stops/reorder  // Reorder stops
+
+// Sharing & Discovery
+GET    /api/trips/:shareCode/share   // Get shareable URL/QR code
+POST   /api/trips/join/:shareCode    // Join existing trip
+```
+
+### 4. **Real-time Features**
+
+```typescript
+// WebSocket Events
+'trip:updated'     // Trip details changed
+'stop:added'       // New stop added
+'stop:removed'     // Stop removed
+'stop:reordered'   // Stops reordered
+'trip:joined'      // Someone joined the trip
+```
+
+### 5. **Sharing Mechanism**
+
+- **Share Codes**: 6-8 character alphanumeric codes (e.g., "ABC123")
+- **Shareable URLs**: `https://convooy.app/trip/ABC123`
+- **QR Codes**: Generate QR codes for easy mobile sharing
+- **No Authentication**: Anyone with the code can join and edit
+
+### 6. **Project Structure**
+
+```
+backend/
+├── src/
+│   ├── controllers/     # Route handlers
+│   ├── services/        # Business logic
+│   ├── models/          # Data models & Prisma schema
+│   ├── middleware/      # Validation, error handling
+│   ├── utils/           # Helpers (share code generation, etc.)
+│   ├── routes/          # API route definitions
+│   └── app.ts           # Express app setup
+├── prisma/
+│   └── schema.prisma    # Database schema
+├── docker-compose.yml   # Local development
+├── Dockerfile
+└── package.json
+```
+
+### 7. **MVP Implementation Priority**
+
+1. **Core Trip CRUD** - Create, read, update trips with destinations
+2. **Stop Management** - Add, remove, reorder stops
+3. **Share Code System** - Generate and validate share codes
+4. **Basic Real-time** - WebSocket updates for trip changes
+5. **API Validation** - Request/response validation
+6. **Error Handling** - Proper error responses
+
+### 8. **iOS Integration Points**
+
+The backend will provide REST APIs that the iOS app can integrate with:
+
+```swift
+// New TripSyncService for iOS
+class TripSyncService {
+    func createTrip(destination: SearchResult) -> String  // Returns share code
+    func joinTrip(shareCode: String) -> Trip?
+    func addStop(stop: Stop, to shareCode: String)
+    func syncStops(for shareCode: String) -> [Stop]
+}
+```
+
+### 9. **Future Enhancements** (Post-MVP)
+
+- User accounts and trip ownership
+- Trip history and favorites
+- Push notifications for trip updates
+- Trip templates and suggestions
+- Analytics and usage metrics
+
+Would you like me to start implementing this backend MVP? I can begin with setting up the project structure and core models, then move on to the API endpoints and real-time features.

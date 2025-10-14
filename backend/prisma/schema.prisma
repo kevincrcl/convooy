@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Trip {
+  id          String   @id @default(cuid())
+  shareCode   String   @unique @map("share_code")
+  name        String?
+  destination Json     // Store as JSON: {name, latitude, longitude, address?}
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  stops       Stop[]
+  
+  @@map("trips")
+  @@index([shareCode])
+  @@index([createdAt])
+}
+
+model Stop {
+  id        String   @id @default(cuid())
+  tripId    String   @map("trip_id")
+  name      String
+  latitude  Float
+  longitude Float
+  address   String?
+  order     Int      // Position in the trip (0-based)
+  addedAt   DateTime @default(now()) @map("added_at")
+  
+  // Relations
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  
+  @@map("stops")
+  @@index([tripId])
+  @@index([tripId, order])
+}
