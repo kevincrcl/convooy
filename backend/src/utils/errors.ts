@@ -95,5 +95,8 @@ export function sendErrorResponse(res: Response, error: unknown): void {
     });
   }
 
-  res.status(errorResponse.statusCode).json(errorResponse);
+  res.status(errorResponse.statusCode).json({
+    success: false,
+    ...errorResponse
+  });
 }

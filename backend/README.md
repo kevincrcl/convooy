@@ -184,6 +184,9 @@ TRIP_EXPIRY_DAYS=30
 - `npm run db:studio` - Open Prisma Studio
 - `npm run lint` - Run ESLint
 - `npm test` - Run tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage report
+- `npm run test:setup` - Set up test database
 
 ### Database Management
 
@@ -197,6 +200,55 @@ npm run db:studio
 # Create migration
 npm run db:migrate
 ```
+
+### Testing
+
+The backend includes comprehensive tests for all API endpoints.
+
+#### Running Tests
+
+Tests automatically start the database if it's not running, so you can just run:
+
+```bash
+# Run all tests (automatically starts database if needed)
+npm test
+
+# Run tests in watch mode (auto-rerun on changes)
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run specific test file
+npm test trips.test.ts
+```
+
+**Note**: The test commands will automatically:
+1. Check if PostgreSQL is running
+2. Start it if needed
+3. Create the test database if it doesn't exist
+4. Run your tests
+
+No manual setup required! Just run `npm test` and everything works.
+
+#### Manual Setup (Optional)
+
+If you want to manually set up the test database:
+
+```bash
+npm run test:setup
+```
+
+#### Test Coverage
+
+The tests cover:
+- ✅ **Trip Management**: Create, read, update, delete operations
+- ✅ **Trip Sharing**: Share codes, URLs, and joining trips
+- ✅ **Trip Statistics**: Stop counts and timestamps
+- ✅ **Validation**: Input validation and error handling
+- ✅ **Integration**: Complete trip lifecycle scenarios
+
+Tests use **Jest**, **Supertest**, and **TypeScript** for comprehensive API testing.
 
 ## iOS Integration
 
