@@ -18,9 +18,7 @@ Automatically runs the backend test suite when changes are made to the backend c
 3. Installs dependencies
 4. Generates Prisma client
 5. Pushes database schema
-6. Runs all tests with coverage
-7. Uploads coverage reports to Codecov (optional)
-8. Comments PR with coverage report (optional)
+6. Runs all tests
 
 **Environment:**
 - **OS**: Ubuntu Latest
@@ -28,18 +26,14 @@ Automatically runs the backend test suite when changes are made to the backend c
 - **Database**: PostgreSQL 15 (Alpine)
 - **Test Database**: `convooy_test`
 
-**Required Secrets (Optional):**
-- `CODECOV_TOKEN` - For uploading coverage reports to Codecov
-
-**Duration:** ~2-3 minutes
+**Duration:** ~1-2 minutes
 
 ### Features
 
 ✅ **Path Filtering**: Only runs when backend files change  
 ✅ **PostgreSQL Service**: Automatic test database setup  
-✅ **Coverage Reports**: Generates and uploads test coverage  
-✅ **PR Comments**: Automatically comments coverage on PRs  
-✅ **Fast**: Uses Yarn cache for quick installs  
+✅ **Parallel Tests**: Fast execution with isolated test resources  
+✅ **Yarn Cache**: Quick dependency installs  
 
 ## Local Testing
 
@@ -77,11 +71,6 @@ When adding new workflows:
 - Consider splitting tests into multiple jobs
 - Review database startup time
 
-### Coverage upload fails
-
-- Verify `CODECOV_TOKEN` is set in repository secrets
-- Check Codecov service status
-- Ensure `lcov.info` file is being generated
 
 ## Status Badges
 

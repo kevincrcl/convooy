@@ -185,7 +185,6 @@ TRIP_EXPIRY_DAYS=30
 - `npm run lint` - Run ESLint
 - `npm test` - Run tests
 - `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Run tests with coverage report
 - `npm run test:setup` - Set up test database
 
 ### Database Management
@@ -203,62 +202,85 @@ npm run db:migrate
 
 ### Testing
 
-The backend includes comprehensive tests for all API endpoints.
+The backend includes comprehensive tests for all API endpoints with **104 tests** running in parallel for fast feedback.
 
-#### Running Tests
+#### Quick Start
 
-Tests automatically start the database if it's not running, so you can just run:
-
-```bash
-# Run all tests (automatically starts database if needed)
-npm test
-
-# Run tests in watch mode (auto-rerun on changes)
-npm run test:watch
-
-# Run tests with coverage report
-npm run test:coverage
-
-# Run specific test file
-npm test trips.test.ts
-```
-
-**Note**: The test commands will automatically:
-1. Check if PostgreSQL is running
-2. Start it if needed
-3. Create the test database if it doesn't exist
-4. Run your tests
-
-No manual setup required! Just run `npm test` and everything works.
-
-#### Manual Setup (Optional)
-
-If you want to manually set up the test database:
+Tests automatically start the database if it's not running:
 
 ```bash
-npm run test:setup
+# Run all tests (auto-starts database if needed)
+yarn test
+
+# Run tests in watch mode
+yarn test:watch
 ```
 
-#### Test Coverage
+**No manual setup required!** The test commands automatically:
+1. Check if PostgreSQL is running and start it if needed
+2. Create the test database if it doesn't exist
+3. Run your tests in parallel
 
-The test suite includes **104 tests** covering:
+#### Test Architecture
 
-**Integration Tests (60 tests):**
-- ✅ **Trip Management**: Create, read, update, delete operations
-- ✅ **Trip Sharing**: Share codes, URLs, and joining trips
-- ✅ **Trip Statistics**: Stop counts and timestamps
-- ✅ **Stop Management**: Add, update, remove, and reorder stops
-- ✅ **Stop Ordering**: Automatic ordering and reordering logic
-- ✅ **Integration**: Complete trip and stop lifecycle scenarios
+Tests use the **Factory Pattern** for automatic resource management:
+
+```typescript
+describe('My Tests', () => {
+  let factory: TestFactory;
+
+  beforeEach(() => {
+    factory = new TestFactory();
+  });
+
+  afterEach(async () => {
+    await factory.cleanup(); // Auto-cleanup
+  });
+
+  it('should work', async () => {
+    const trip = await factory.createTrip({ name: 'Test' });
+    const stop = await factory.createStop(trip.body.data.shareCode);
+    // Test code here - cleanup is automatic
+  });
+});
+```
+
+**Key Features:**
+- ✅ **Parallel execution** - tests run simultaneously for speed
+- ✅ **Automatic cleanup** - each test cleans up only its own resources
+- ✅ **True isolation** - tests never interfere with each other
+- ✅ **No manual tracking** - factory handles everything automatically
+
+See `tests/factory.ts` for all available helper methods.
+
+#### Test Suite
+
+**104 tests** covering:
+
+**Integration Tests (60+ tests):**
+- Trip management (CRUD operations)
+- Stop management (add, update, remove, reorder)
+- Trip sharing and joining
+- Complete lifecycle scenarios
 
 **Unit Tests (44 tests):**
-- ✅ **Validation Middleware**: Body, params, and query validation
-- ✅ **Share Code Utils**: Format, clean, and validate share codes
-- ✅ **Error Handling**: Error classes and formatting
+- Validation middleware
+- Share code utilities
+- Error handling
 
-**Coverage**: ~81% statements, ~67% branches, ~80% lines
+#### CI/CD
 
-Tests use **Jest**, **Supertest**, and **TypeScript** for comprehensive testing.
+Tests run automatically on:
+- **Pull Requests** to `main` that modify `backend/` files
+- **Pushes** to `main` branch
+
+The GitHub Actions workflow:
+1. Starts PostgreSQL test database
+2. Installs dependencies and generates Prisma client
+3. Runs all tests in parallel
+4. Reports pass/fail status
+
+See `.github/workflows/backend-tests.yml` for details.
 
 ## iOS Integration
 

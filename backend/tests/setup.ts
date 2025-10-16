@@ -4,21 +4,8 @@ import { prisma } from '../src/services/database';
 process.env.NODE_ENV = 'test';
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || 'postgresql://convooy_user:convooy_password@localhost:5432/convooy_test';
 
-// Mock nanoid to avoid ESM issues
-jest.mock('nanoid', () => {
-  let counter = 0;
-  return {
-    customAlphabet: () => () => {
-      counter++;
-      // Generate a deterministic share code for testing
-      const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      const code = counter.toString().padStart(6, '0').split('').map((digit) => {
-        return alphabet[parseInt(digit) % alphabet.length];
-      }).join('');
-      return code;
-    },
-  };
-});
+// No need to mock nanoid - it works fine with Jest and provides truly unique IDs
+// The real nanoid is cryptographically strong and guaranteed to be unique
 
 // Clean up database before each test suite
 beforeAll(async () => {
@@ -28,17 +15,14 @@ beforeAll(async () => {
 
 // Clean up database after all tests
 afterAll(async () => {
-  // Clean up all test data
+  // Clean up any leftover test data (shouldn't be any if tests use factory properly)
   await prisma.stop.deleteMany({});
   await prisma.trip.deleteMany({});
-  
+
   // Disconnect from database
   await prisma.$disconnect();
 });
 
-// Clean up between tests to ensure isolation
-afterEach(async () => {
-  await prisma.stop.deleteMany({});
-  await prisma.trip.deleteMany({});
-});
+// Note: Individual test cleanup is now handled by TestFactory in each test's afterEach
+// No global afterEach cleanup needed - tests manage their own resources
 

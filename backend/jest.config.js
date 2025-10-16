@@ -24,5 +24,7 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js', 'json', 'node'],
   testTimeout: 10000,
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  // Parallel execution enabled - tests use TestFactory for isolated resource cleanup
+  // maxWorkers defaults to number of CPU cores - 1
 };
 
