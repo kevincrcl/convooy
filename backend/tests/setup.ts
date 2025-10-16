@@ -1,4 +1,4 @@
-import { prisma } from '../services/database';
+import { prisma } from '../src/services/database';
 
 // Set test environment variables
 process.env.NODE_ENV = 'test';

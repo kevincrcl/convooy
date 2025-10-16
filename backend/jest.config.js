@@ -1,9 +1,11 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.test.ts', '**/?(*.)+(spec|test).ts'],
-  testPathIgnorePatterns: ['<rootDir>/src/__tests__/setup.ts'],
+  roots: ['<rootDir>/src', '<rootDir>/tests'],
+  testMatch: [
+    '**/tests/**/*.test.ts',           // Integration tests
+    '**/__tests__/**/*.unit.ts',       // Unit tests
+  ],
   transform: {
     '^.+\\.ts$': ['ts-jest', {
       isolatedModules: true,
@@ -16,10 +18,11 @@ module.exports = {
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/**/__tests__/**',
+    '!tests/**',
   ],
   coverageDirectory: 'coverage',
   moduleFileExtensions: ['ts', 'js', 'json', 'node'],
   testTimeout: 10000,
-  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
 };
 

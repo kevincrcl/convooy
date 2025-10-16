@@ -1,7 +1,7 @@
 import request from 'supertest';
-import { app } from '../app';
-import { prisma } from '../services/database';
-import { CreateTripRequest, UpdateTripRequest, Location } from '../models/types';
+import { app } from '../src/app';
+import { prisma } from '../src/services/database';
+import { CreateTripRequest, UpdateTripRequest, Location } from '../src/models/types';
 
 describe('Trips API', () => {
   const mockDestination: Location = {

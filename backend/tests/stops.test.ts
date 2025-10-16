@@ -1,7 +1,7 @@
 import request from 'supertest';
-import { app } from '../app';
-import { prisma } from '../services/database';
-import { CreateStopRequest, UpdateStopRequest, ReorderStopsRequest } from '../models/types';
+import { app } from '../src/app';
+import { prisma } from '../src/services/database';
+import { CreateStopRequest, UpdateStopRequest, ReorderStopsRequest } from '../src/models/types';
 
 describe('Stops API', () => {
   let testShareCode: string;
