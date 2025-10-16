@@ -28,6 +28,7 @@ const StopParamsSchema = z.object({
 });
 
 // Stop routes
+// NOTE: Specific routes (like /reorder) must come before parameterized routes (like /:stopId)
 router.post(
   '/:shareCode/stops',
   validateParams(ShareCodeParamsSchema),
@@ -41,6 +42,14 @@ router.get(
   getStops
 );
 
+// Reorder must come BEFORE /:stopId to avoid matching "reorder" as a stopId
+router.put(
+  '/:shareCode/stops/reorder',
+  validateParams(ShareCodeParamsSchema),
+  validateBody(ReorderStopsSchema),
+  reorderStops
+);
+
 router.put(
   '/:shareCode/stops/:stopId',
   validateParams(StopParamsSchema),
@@ -52,13 +61,6 @@ router.delete(
   '/:shareCode/stops/:stopId',
   validateParams(StopParamsSchema),
   removeStop
-);
-
-router.put(
-  '/:shareCode/stops/reorder',
-  validateParams(ShareCodeParamsSchema),
-  validateBody(ReorderStopsSchema),
-  reorderStops
 );
 
 export default router;

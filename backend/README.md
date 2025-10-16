@@ -241,12 +241,16 @@ npm run test:setup
 
 #### Test Coverage
 
-The tests cover:
+The test suite includes **60 tests** covering:
 - ✅ **Trip Management**: Create, read, update, delete operations
 - ✅ **Trip Sharing**: Share codes, URLs, and joining trips
 - ✅ **Trip Statistics**: Stop counts and timestamps
+- ✅ **Stop Management**: Add, update, remove, and reorder stops
+- ✅ **Stop Ordering**: Automatic ordering and reordering logic
 - ✅ **Validation**: Input validation and error handling
-- ✅ **Integration**: Complete trip lifecycle scenarios
+- ✅ **Integration**: Complete trip and stop lifecycle scenarios
+
+**Coverage**: ~78% statements, ~75% branches, ~77% lines
 
 Tests use **Jest**, **Supertest**, and **TypeScript** for comprehensive API testing.
 
