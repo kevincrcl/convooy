@@ -5,6 +5,12 @@
 
 set -e
 
+# Skip Docker operations in CI environments (GitHub Actions, etc.)
+if [ -n "$CI" ]; then
+  echo "🔧 Running in CI environment - skipping Docker checks"
+  exit 0
+fi
+
 # Function to check if PostgreSQL is running
 check_postgres() {
   docker ps --filter "name=convooy-postgres" --filter "status=running" --format "{{.Names}}" | grep -q "convooy-postgres"

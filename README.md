@@ -1,11 +1,13 @@
 # Convooy
 
-A trip planning application with both web and iOS implementations.
+A trip planning application with web, iOS, and backend API implementations.
 
 ## Project Structure
 
+- `backend/` - Node.js/TypeScript API with PostgreSQL
 - `web/` - React/TypeScript web application with Mapbox integration
 - `Convooy/` - SwiftUI iOS application with MapKit integration
+- `landing-page/` - Marketing landing page
 
 ## Web Version
 
@@ -39,9 +41,30 @@ The iOS version is built with SwiftUI and MapKit. It provides:
 2. Build and run the project
 3. Grant location permissions when prompted
 
+## Backend API
+
+The backend provides a REST API with real-time WebSocket support for trip sharing:
+
+- Trip management with share codes
+- Stop management and reordering
+- Real-time updates via WebSockets
+- Comprehensive test suite (104 tests, 80%+ coverage)
+- Automatic CI/CD testing
+
+### Setup
+
+```bash
+cd backend
+yarn install
+yarn dev  # Automatically starts database and dev server
+yarn test # Run test suite
+```
+
+See [backend/README.md](backend/README.md) for detailed documentation.
+
 ## Development
 
-Both versions are being developed in parallel to provide the same core functionality:
+All components are being developed to provide the same core functionality:
 
 - Trip creation and management
 - Stop management with drag-and-drop reordering
@@ -49,4 +72,11 @@ Both versions are being developed in parallel to provide the same core functiona
 - Location search and autocomplete
 - Real-time location tracking
 
-The iOS version is currently in early development and will gradually match the functionality of the web version. 
+## CI/CD
+
+- **Backend Tests**: Automatically run on PRs and merges to `main`
+  - 104 tests with 80%+ coverage
+  - PostgreSQL integration tests
+  - Unit tests for business logic
+  
+See [.github/workflows/README.md](.github/workflows/README.md) for details. 
